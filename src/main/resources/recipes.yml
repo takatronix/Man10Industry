@@ -1,0 +1,5 @@
+melt_iron:
+  chance_sets:
+    1: rare
+  inputs:
+  outputs:

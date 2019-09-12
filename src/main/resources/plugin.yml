@@ -1,0 +1,14 @@
+name: Man10Industry
+version: ${project.version}
+main: red.man10.MIPlugin
+authors: [Shupro,Ryotackey,takatronix]
+description: Minecraft Man10 Industry plugin
+prefix: mIndustry
+website: http://man10.red
+commands:
+  mi:
+permissions:
+  mi.use:
+    default: true
+  mi.op:
+    default: op

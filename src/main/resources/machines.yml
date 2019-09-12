@@ -1,0 +1,5 @@
+melter: #マシンid
+  name: 溶融機 #マシン名
+  image_name: melter #画像名
+  recipes: #マシンにあるレシピ一覧
+  - melt_iron #レシピidを参照
