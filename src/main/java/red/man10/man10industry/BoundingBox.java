@@ -53,10 +53,10 @@ public class BoundingBox {
     }
 
 
-    BoundingBox (AxisAlignedBB bb){
-        min = new Vector(bb.a,bb.b,bb.c);
-        max = new Vector(bb.d,bb.e,bb.f);
-    }
+//    BoundingBox (AxisAlignedBB bb){
+//        min = new Vector(bb.a,bb.b,bb.c);
+//        max = new Vector(bb.d,bb.e,bb.f);
+//    }
 
     public Vector midPoint(){
         return max.clone().add(min).multiply(0.5);
