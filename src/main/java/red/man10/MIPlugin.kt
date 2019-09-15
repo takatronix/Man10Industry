@@ -1,10 +1,11 @@
-package red.man10.man10industry
+package red.man10
 
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
+import red.man10.man10industry.*
 import red.man10.man10industry.models.Machine
 import red.man10.man10industry.models.Recipe
 import red.man10.man10industry.models.Skill
@@ -199,6 +200,8 @@ class MIPlugin : JavaPlugin() {
                     }
                     2 -> {
                         when (args[0]) {
+
+
                             "usemachine" -> {
                                 gui.openProcessingView(sender, args[1])
                                 return true
@@ -264,6 +267,13 @@ class MIPlugin : JavaPlugin() {
                                 }
                             }
 
+                            "createrecipe" -> {
+                                Thread(Runnable {
+                                    config.createRecipe(args[1],args[2])
+                                }).start()
+                            }
+
+
                         }
                     }
                     4 -> {
@@ -293,7 +303,21 @@ class MIPlugin : JavaPlugin() {
                                 sender.sendMessage(prefix + "§bLevel set")
                                 return true
                             }
+
+                            "createmachine" -> {
+                                Thread(Runnable {
+                                    config.createMachine(args[1],args[2],args[3])
+                                }).start()
+                            }
+                            "createchance" -> {
+                                Thread(Runnable {
+                                    config.createChance(args[1],args[2],args[3])
+                                }).start()
+                            }
+
+
                         }
+
                     }
                 }
             }
@@ -317,6 +341,9 @@ class MIPlugin : JavaPlugin() {
         sender.sendMessage("§3/mi setlevel [playerId] [skillId] [level] §7Set a level of player")
         sender.sendMessage("§3/mi update [playerId] §7Update player's skill cache by DB.")
         sender.sendMessage("§3/mi get [machineId] §7Get a machine")
+        sender.sendMessage("§3/mi createrecipe [recipeId] [chanceId] §7Create new recipe.")
+        sender.sendMessage("§3/mi createmachine [machineId] [machine name] [image] §7Create new machine.")
+        sender.sendMessage("§3/mi createchance [chanceId] [minlevel] [data] §7Create new chance data.")
         sender.sendMessage("§bVer 0.2 : by Shupro & Ryotackey")
         sender.sendMessage("§a***************************")
     }

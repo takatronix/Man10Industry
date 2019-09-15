@@ -5,6 +5,8 @@ import org.bukkit.inventory.ItemStack
 import java.awt.Graphics2D
 import org.bukkit.entity.Player
 import org.bukkit.Bukkit
+import red.man10.MIPlugin
+import red.man10.PlayerSkillData
 import red.man10.man10industry.models.Machine
 import java.util.*
 

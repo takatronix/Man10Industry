@@ -4,6 +4,7 @@ import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.inventory.ItemStack
+import red.man10.MIPlugin
 import red.man10.man10industry.models.Machine
 import red.man10.man10industry.models.Recipe
 import red.man10.man10industry.models.Skill
@@ -47,6 +48,46 @@ class MIConfig(val pl: MIPlugin) {
         ymlFile.set(recipeKey + ".outputs", encodedItems)
 
         ymlFile.save(file)
+    }
+
+    fun createMachine(id :String,name:String,image:String){
+        val file = loadFile("machines",Bukkit.getConsoleSender())
+        val ymlFile = YamlConfiguration.loadConfiguration(file)
+        ymlFile.set("",id)
+        ymlFile.set(id,name)
+        ymlFile.set(id,image)
+        ymlFile.set(id,"recipes")
+    }
+
+    fun createRecipe(id:String,chance:String){
+        val file = loadFile("recipes", Bukkit.getConsoleSender())
+        val ymlFile = YamlConfiguration.loadConfiguration(file)
+
+        ymlFile.set("",id)
+        val chanceData = chance.split(",")
+        for (data in chanceData){
+            val d = data.split(":")
+            ymlFile.set(id,d[0])
+            ymlFile.set("$id.${d[0]}",d[1])
+        }
+        ymlFile.set(id,"inputs")
+        ymlFile.set(id,"outputs")
+    }
+
+    fun createChance(id:String,minLevel:String,map:String){
+        val file = loadFile("chance_sets",Bukkit.getConsoleSender())
+        val ymlFile = YamlConfiguration.loadConfiguration(file)
+
+        ymlFile.set("",id)
+        ymlFile.set(id,"req")
+        ymlFile.set("$id.req",minLevel)
+        val maps = map.split(",")
+        for (m in maps){
+            val mapData = m.split(":")
+            ymlFile.set(id,mapData[0])
+            ymlFile.set("$id.${mapData[0]}",mapData[1])
+
+        }
     }
 
     private fun loadChanceSets(cs: CommandSender) {

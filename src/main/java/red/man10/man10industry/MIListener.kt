@@ -1,11 +1,10 @@
 package red.man10.man10industry
 
-import org.bukkit.Material
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.player.PlayerJoinEvent
-import org.bukkit.inventory.ItemStack
+import red.man10.MIPlugin
 
 
 class MIListener(val pl: MIPlugin): Listener {
