@@ -124,8 +124,6 @@ class MIPlugin : JavaPlugin() {
                         when (args[0]) {
                             "myskill" -> {
 
-                                sender.sendMessage(player_slimit.toString())
-
                                 if (!skill.currentPlayerData.containsKey(sender.uniqueId) || skill.currentPlayerData[sender.uniqueId] == null || skill.currentPlayerData[sender.uniqueId]!!.isEmpty()) {
                                     val p = mutableMapOf<Int, Int>()
 
