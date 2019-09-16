@@ -131,13 +131,22 @@ class MIConfig(val pl: MIPlugin) {
         ymlFile.save(file)
         Bukkit.getLogger().info("delete machine")
     }
-    fun deleteRecipe(reciped: String){
+    fun deleteRecipe(recipeId: String){
         val file = loadFile("recipes",Bukkit.getConsoleSender())
         val ymlFile = YamlConfiguration.loadConfiguration(file)
 
-        ymlFile.set(reciped,null)
+        ymlFile.set(recipeId,null)
         ymlFile.save(file)
         Bukkit.getLogger().info("delete recipe")
+    }
+    fun deleteChance(chanceId:String){
+        val file = loadFile("chance_sets",Bukkit.getConsoleSender())
+        val ymlFile = YamlConfiguration.loadConfiguration(file)
+
+        ymlFile.set(chanceId,null)
+        ymlFile.save(file)
+        Bukkit.getLogger().info("delete chance")
+
     }
     private fun loadChanceSets(cs: CommandSender) {
         val file = loadFile("chance_sets", cs)

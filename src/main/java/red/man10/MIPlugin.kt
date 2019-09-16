@@ -243,6 +243,12 @@ class MIPlugin : JavaPlugin() {
                                 }).start()
                                 return true
                             }
+                            "deletechance" ->{
+                                Thread(Runnable {
+                                    config.deleteChance(args[1])
+                                }).start()
+                                return true
+                            }
                         }
                     }
                     3 -> {
