@@ -41,10 +41,11 @@ class MIMachine(val pl: MIPlugin) {
     }*/
 
     fun process(p: PlayerSkillData, machine: Machine, inputs: MutableList<ItemStack>, pla: Player): MutableList<ItemStack>? {
-        print(inputs)
+//        print(inputs)
         for (recipe in machine.recipes) {
             if (recipe.inputs != inputs){
-                break
+                Bukkit.getLogger().info("1")
+                continue
             }
             val chance = recipe.chanceSets
             val skillid = mutableListOf<Int>()
@@ -52,7 +53,8 @@ class MIMachine(val pl: MIPlugin) {
                 for (i in 0 until pl.skills.size) {
                     if (pl.skills[i] == c.key){
                         skillid.add(i)
-                        break
+                        Bukkit.getLogger().info("2")
+                        continue
                     }
                 }
             }
@@ -69,7 +71,7 @@ class MIMachine(val pl: MIPlugin) {
                     return inputs
                 }
 
-                var pre: Int = 0
+                var pre = 0
                 var min = 0.0
 
 
@@ -129,7 +131,7 @@ class MIMachine(val pl: MIPlugin) {
                 true
             }
 
-            MappRenderer.displayTouchEvent(machine.key) { key: String, mapId: Int, player: Player, x: Int, y: Int ->
+            MappRenderer.displayTouchEvent(machine.key) { key: String, _: Int, player: Player, _: Int, _: Int ->
                 if (player.hasPermission("mi.use")) {
                     pl.gui.openProcessingView(player, key)
                 }

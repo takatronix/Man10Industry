@@ -249,6 +249,14 @@ class MIPlugin : JavaPlugin() {
                                 }).start()
                                 return true
                             }
+                            "showrecipe" ->{
+                                Thread(Runnable {
+
+                                    for (recipe in config.showRecipes(args[1])){
+                                        sender.sendMessage("$prefix§a$recipe")
+                                    }
+                                }).start()
+                            }
                         }
                     }
                     3 -> {
@@ -288,6 +296,7 @@ class MIPlugin : JavaPlugin() {
                             "createrecipe" -> {
                                 Thread(Runnable {
                                     config.createRecipe(args[1],args[2])
+                                    sender.sendMessage("$prefix§bCreate new recipe. You have to reload plugin /mi reload.")
                                 }).start()
                                 return true
                             }
@@ -295,12 +304,14 @@ class MIPlugin : JavaPlugin() {
                             "setrecipe" -> {
                                 Thread(Runnable {
                                     config.setRecipe(args[1],args[2])
+                                    sender.sendMessage("$prefix§bSet ${args[1]} to ${args[2]}. You have to reload plugin /mi reload.")
                                 }).start()
                                 return true
                             }
                             "removerecipe" ->{
                                 Thread(Runnable {
                                     config.removeRecipe(args[1],args[2])
+                                    sender.sendMessage("$prefix§bremove ${args[2]} from ${args[1]}. You have to reload plugin /mi reload.")
                                 }).start()
                                 return true
                             }
@@ -338,12 +349,14 @@ class MIPlugin : JavaPlugin() {
                             "createmachine" -> {
                                 Thread(Runnable {
                                     config.createMachine(args[1],args[2],args[3])
+                                    sender.sendMessage("$prefix§bCreate new machine. You have to reload plugin /mi reload.")
                                 }).start()
                                 return true
                             }
                             "createchance" -> {
                                 Thread(Runnable {
                                     config.createChance(args[1],args[2],args[3])
+                                    sender.sendMessage("$prefix§bCreate new chance. You have to reload plugin /mi reload.")
                                 }).start()
                                 return true
                             }
@@ -381,6 +394,7 @@ class MIPlugin : JavaPlugin() {
         sender.sendMessage("§3/mi removerecipe [machineId] [recipeId] §7Remove a recipe from the machine.")
         sender.sendMessage("§3/mi deleterecipe [recipeId] §7Delete a recipe.")
         sender.sendMessage("§3/mi deletemachine [machineId] §7Delete a machine.")
+        sender.sendMessage("§3/mi deletechance [chanceId] §7Delete a chance.")
         sender.sendMessage("§bVer 0.2 : by Shupro & Ryotackey")
         sender.sendMessage("§a***************************")
     }

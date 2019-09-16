@@ -96,15 +96,13 @@ class MIConfig(val pl: MIPlugin) {
     fun setRecipe(machineId :String, recipeId:String){
         val file = loadFile("machines",Bukkit.getConsoleSender())
         val ymlFile = YamlConfiguration.loadConfiguration(file)
-        val recipe = ymlFile.getStringList("$machineId.recipes")
+        val recipe = ymlFile.getStringList("$machineId.recipes").toMutableList()
 
         if (recipe.indexOf(recipeId) >=0){
             Bukkit.getLogger().info("$recipeId is already exist.")
             return
         }
-
         recipe.add(recipeId)
-
         ymlFile.set("$machineId.recipes",recipe)
         ymlFile.save(file)
         Bukkit.getLogger().info("set recipe")
@@ -148,6 +146,13 @@ class MIConfig(val pl: MIPlugin) {
         Bukkit.getLogger().info("delete chance")
 
     }
+    fun showRecipes(id:String):MutableList<String>{
+        val file = loadFile("machines",Bukkit.getConsoleSender())
+        val ymlFile = YamlConfiguration.loadConfiguration(file)
+
+        return ymlFile.getStringList("$id.recipes")
+    }
+
     private fun loadChanceSets(cs: CommandSender) {
         val file = loadFile("chance_sets", cs)
 
