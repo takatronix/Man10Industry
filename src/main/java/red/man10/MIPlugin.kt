@@ -271,6 +271,14 @@ class MIPlugin : JavaPlugin() {
                                 Thread(Runnable {
                                     config.createRecipe(args[1],args[2])
                                 }).start()
+                                return true
+                            }
+
+                            "setrecipe" -> {
+                                Thread(Runnable {
+                                    config.setRecipe(args[1],args[2])
+                                }).start()
+                                return true
                             }
 
 
@@ -308,11 +316,13 @@ class MIPlugin : JavaPlugin() {
                                 Thread(Runnable {
                                     config.createMachine(args[1],args[2],args[3])
                                 }).start()
+                                return true
                             }
                             "createchance" -> {
                                 Thread(Runnable {
                                     config.createChance(args[1],args[2],args[3])
                                 }).start()
+                                return true
                             }
 
 

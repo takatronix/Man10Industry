@@ -53,41 +53,52 @@ class MIConfig(val pl: MIPlugin) {
     fun createMachine(id :String,name:String,image:String){
         val file = loadFile("machines",Bukkit.getConsoleSender())
         val ymlFile = YamlConfiguration.loadConfiguration(file)
-        ymlFile.set("",id)
-        ymlFile.set(id,name)
-        ymlFile.set(id,image)
-        ymlFile.set(id,"recipes")
+        ymlFile.createSection(id)
+        ymlFile.set("$id.name",name)
+        ymlFile.set("$id.image_name",image)
+        ymlFile.set("$id.recipes",null)
+        ymlFile.save(file)
+        Bukkit.getLogger().info("created new machine")
     }
 
     fun createRecipe(id:String,chance:String){
         val file = loadFile("recipes", Bukkit.getConsoleSender())
         val ymlFile = YamlConfiguration.loadConfiguration(file)
 
-        ymlFile.set("",id)
+        ymlFile.createSection(id)
         val chanceData = chance.split(",")
         for (data in chanceData){
             val d = data.split(":")
-            ymlFile.set(id,d[0])
-            ymlFile.set("$id.${d[0]}",d[1])
+            ymlFile.set("$id.chance_sets.${d[0]}",d[1])
         }
-        ymlFile.set(id,"inputs")
-        ymlFile.set(id,"outputs")
+        ymlFile.set("$id.inputs",null)
+        ymlFile.set("$id.outputs",null)
+        ymlFile.save(file)
+        Bukkit.getLogger().info("created new recipe")
     }
 
     fun createChance(id:String,minLevel:String,map:String){
         val file = loadFile("chance_sets",Bukkit.getConsoleSender())
         val ymlFile = YamlConfiguration.loadConfiguration(file)
 
-        ymlFile.set("",id)
-        ymlFile.set(id,"req")
+        ymlFile.createSection(id)
         ymlFile.set("$id.req",minLevel)
         val maps = map.split(",")
         for (m in maps){
             val mapData = m.split(":")
-            ymlFile.set(id,mapData[0])
-            ymlFile.set("$id.${mapData[0]}",mapData[1])
+            ymlFile.set("$id.map.${mapData[0]}",mapData[1])
 
         }
+        ymlFile.save(file)
+        Bukkit.getLogger().info("created new chance data")
+    }
+
+    fun setRecipe(machineId :String, recipeId:String){
+        val file = loadFile("machines",Bukkit.getConsoleSender())
+        val ymlFile = YamlConfiguration.loadConfiguration(file)
+        ymlFile.set("$machineId.recipes",recipeId)
+        ymlFile.save(file)
+        Bukkit.getLogger().info("set recipe")
     }
 
     private fun loadChanceSets(cs: CommandSender) {
