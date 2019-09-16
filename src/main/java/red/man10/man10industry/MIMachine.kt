@@ -44,7 +44,6 @@ class MIMachine(val pl: MIPlugin) {
 //        print(inputs)
         for (recipe in machine.recipes) {
             if (recipe.inputs != inputs){
-                Bukkit.getLogger().info("1")
                 continue
             }
             val chance = recipe.chanceSets
@@ -53,7 +52,6 @@ class MIMachine(val pl: MIPlugin) {
                 for (i in 0 until pl.skills.size) {
                     if (pl.skills[i] == c.key){
                         skillid.add(i)
-                        Bukkit.getLogger().info("2")
                         continue
                     }
                 }
@@ -61,7 +59,7 @@ class MIMachine(val pl: MIPlugin) {
 
             if (skillid.size == 0) return mutableListOf(ItemStack(Material.AIR))
 
-            val flags = mutableListOf<Boolean>()
+            var flags = mutableListOf<Boolean>()
 
             for (i in skillid){
                 val level = chance[pl.skills[i]]
@@ -71,38 +69,35 @@ class MIMachine(val pl: MIPlugin) {
                     return inputs
                 }
 
-                var pre = 0
                 var min = 0.0
-
-
                 for (l in level.chances){
-
-                    if (p[i]!!.toInt() >= l.key && pre < l.key){
+                    if (p[i]!! >= l.key){
                         min = l.value
-                        pre = l.key.toString().toInt()
                     }
-
                 }
-                val r = Random().nextDouble()
+
+
+                val r = Math.random()
 
                 if (min >= r){
                     flags.add(true)
                 }else{
                     flags.add(false)
-                    val r2 = Random().nextDouble()
-                    pla.sendMessage(r2.toString() + "/" + min.toString() + "/" + pl.player_slimit[pla.uniqueId]!! + "/" + p[i]!!)
+
+                    val r2 = Math.random()
+//                    pla.sendMessage(r2.toString() + "/" + min.toString() + "/" + pl.player_slimit[pla.uniqueId]!! + "/" + p[i]!!)
                     if (min < r2 && p[i]!! < 100 && pl.player_slimit[pla.uniqueId]!! > 0) {
                         pla.sendMessage("${pl.prefix}§e${pl.skills[i-1].name}スキル§aがレベルアップしました！§6[§f${p[i]!!}Lv->${p[i]!! + 1}Lv§6]")
                         val s = pl.skill.currentPlayerData[pla.uniqueId]
                         s!![i] = p[i]!! + 1
                         pl.player_slimit[pla.uniqueId] = pl.player_slimit[pla.uniqueId]!! - 1
                     }
+
                 }
+
             }
 
-            for (i in flags){
-                if (!i)return null
-            }
+            if (flags.indexOf(false) >=0)return null
 
             return recipe.outputs
 

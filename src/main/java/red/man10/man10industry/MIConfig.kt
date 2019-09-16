@@ -82,11 +82,11 @@ class MIConfig(val pl: MIPlugin) {
         val ymlFile = YamlConfiguration.loadConfiguration(file)
 
         ymlFile.createSection(id)
-        ymlFile.set("$id.req",minLevel)
+        ymlFile.set("$id.req",minLevel.toInt())
         val maps = map.split(",")
         for (m in maps){
             val mapData = m.split(":")
-            ymlFile.set("$id.map.${mapData[0]}",mapData[1])
+            ymlFile.set("$id.map.${mapData[0]}",mapData[1].toInt())
 
         }
         ymlFile.save(file)
