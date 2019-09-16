@@ -231,6 +231,18 @@ class MIPlugin : JavaPlugin() {
                                     return true
                                 }
                             }
+                            "deleterecipe" ->{
+                                Thread(Runnable {
+                                    config.deleteRecipe(args[1])
+                                }).start()
+                                return true
+                            }
+                            "deletemachine" ->{
+                                Thread(Runnable {
+                                    config.deleteMachine(args[1])
+                                }).start()
+                                return true
+                            }
                         }
                     }
                     3 -> {
@@ -280,7 +292,12 @@ class MIPlugin : JavaPlugin() {
                                 }).start()
                                 return true
                             }
-
+                            "removerecipe" ->{
+                                Thread(Runnable {
+                                    config.removeRecipe(args[1],args[2])
+                                }).start()
+                                return true
+                            }
 
                         }
                     }
@@ -351,9 +368,13 @@ class MIPlugin : JavaPlugin() {
         sender.sendMessage("§3/mi setlevel [playerId] [skillId] [level] §7Set a level of player")
         sender.sendMessage("§3/mi update [playerId] §7Update player's skill cache by DB.")
         sender.sendMessage("§3/mi get [machineId] §7Get a machine")
-        sender.sendMessage("§3/mi createrecipe [recipeId] [chanceId] §7Create new recipe.")
-        sender.sendMessage("§3/mi createmachine [machineId] [machine name] [image] §7Create new machine.")
+        sender.sendMessage("§3/mi createrecipe [recipeId] [chanceId] §7Create a new recipe.")
+        sender.sendMessage("§3/mi createmachine [machineId] [machine name] [image] §7Create a new machine.")
         sender.sendMessage("§3/mi createchance [chanceId] [minlevel] [data] §7Create new chance data.")
+        sender.sendMessage("§3/mi setrecipe [machineId] [recipeId] §7set the recipe to the machine.")
+        sender.sendMessage("§3/mi removerecipe [machineId] [recipeId] §7Remove a recipe from the machine.")
+        sender.sendMessage("§3/mi deleterecipe [recipeId] §7Delete a recipe.")
+        sender.sendMessage("§3/mi deletemachine [machineId] §7Delete a machine.")
         sender.sendMessage("§bVer 0.2 : by Shupro & Ryotackey")
         sender.sendMessage("§a***************************")
     }

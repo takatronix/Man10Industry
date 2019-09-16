@@ -56,7 +56,7 @@ class MIConfig(val pl: MIPlugin) {
         ymlFile.createSection(id)
         ymlFile.set("$id.name",name)
         ymlFile.set("$id.image_name",image)
-        ymlFile.set("$id.recipes",null)
+        ymlFile.set("$id.recipes", mutableListOf<String>())
         ymlFile.save(file)
         Bukkit.getLogger().info("created new machine")
     }
@@ -96,11 +96,49 @@ class MIConfig(val pl: MIPlugin) {
     fun setRecipe(machineId :String, recipeId:String){
         val file = loadFile("machines",Bukkit.getConsoleSender())
         val ymlFile = YamlConfiguration.loadConfiguration(file)
-        ymlFile.set("$machineId.recipes",recipeId)
+        val recipe = ymlFile.getStringList("$machineId.recipes")
+
+        if (recipe.indexOf(recipeId) >=0){
+            Bukkit.getLogger().info("$recipeId is already exist.")
+            return
+        }
+
+        recipe.add(recipeId)
+
+        ymlFile.set("$machineId.recipes",recipe)
         ymlFile.save(file)
         Bukkit.getLogger().info("set recipe")
     }
 
+    fun removeRecipe(machineId: String, recipeId: String){
+        val file = loadFile("machines",Bukkit.getConsoleSender())
+        val ymlFile = YamlConfiguration.loadConfiguration(file)
+        val recipe = ymlFile.getStringList("$machineId.recipes")
+
+        recipe.remove(recipeId)
+
+        ymlFile.set("$machineId.recipes",recipe)
+        ymlFile.save(file)
+        Bukkit.getLogger().info("set recipe")
+
+    }
+
+    fun deleteMachine(machineId: String){
+        val file = loadFile("machines",Bukkit.getConsoleSender())
+        val ymlFile = YamlConfiguration.loadConfiguration(file)
+
+        ymlFile.set(machineId,null)
+        ymlFile.save(file)
+        Bukkit.getLogger().info("delete machine")
+    }
+    fun deleteRecipe(reciped: String){
+        val file = loadFile("recipes",Bukkit.getConsoleSender())
+        val ymlFile = YamlConfiguration.loadConfiguration(file)
+
+        ymlFile.set(reciped,null)
+        ymlFile.save(file)
+        Bukkit.getLogger().info("delete recipe")
+    }
     private fun loadChanceSets(cs: CommandSender) {
         val file = loadFile("chance_sets", cs)
 
