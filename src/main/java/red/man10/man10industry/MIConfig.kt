@@ -86,7 +86,7 @@ class MIConfig(val pl: MIPlugin) {
         val maps = map.split(",")
         for (m in maps){
             val mapData = m.split(":")
-            ymlFile.set("$id.map.${mapData[0]}",mapData[1].toInt())
+            ymlFile.set("$id.map.${mapData[0]}",mapData[1].toDouble())
 
         }
         ymlFile.save(file)

@@ -12,6 +12,7 @@ import red.man10.man10industry.models.Skill
 import red.man10.man10industry.models.*
 import java.io.File
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.HashMap
 
 typealias PlayerSkillData = MutableMap<Int, Int>
@@ -34,7 +35,9 @@ class MIPlugin : JavaPlugin() {
     var skills = mutableListOf<Skill>()
     var machines = HashMap<String, Machine>()
 
-    val player_slimit = HashMap<UUID, Int>()
+    val currentPlayerData= ConcurrentHashMap<UUID, PlayerSkillData>()
+
+    val player_slimit = ConcurrentHashMap<UUID, Int>()
 
     //var mysql: MySQLManager? = null
 
@@ -56,27 +59,27 @@ class MIPlugin : JavaPlugin() {
         saveDefaultConfig()
 
         config.loadAll(Bukkit.getConsoleSender(), true)
-        val get = getPlayerData(this)
-        get.start()
+
         for (player in Bukkit.getOnlinePlayers()) {
-            skill.currentPlayerData.put(player.uniqueId, mutableMapOf())
+            skill.load(player)
         }
 
-        this.createDefaultImagesAndSettings();
+        Thread(Runnable {
+            while (true){
+                Thread.sleep(3600000)
+                skill.save()
+            }
+        }).start()
 
-        val timer = Timer()
-        timer.schedule(setData(this), 60000)
-
-        val create = createTable(this)
-        create.start()
+        this.createDefaultImagesAndSettings()
 
     }
 
     override fun onDisable() {
         // Plugin shutdown logic
-        val set = setPlayerData(this)
-        set.start()
+        skill.save()
     }
+
 
     fun createDefaultImagesAndSettings() {
         try {
@@ -107,9 +110,9 @@ class MIPlugin : JavaPlugin() {
     override fun onCommand(sender: CommandSender, cmd: Command, label: String, args: Array<String>): Boolean {
         if (sender is Player) {
             if (isLocked) {
-                sender.sendMessage(prefix + "§aPlugin Locked")
+                sender.sendMessage("$prefix§aPlugin Locked")
                 if (sender.hasPermission("mi.op")){
-                    sender.sendMessage(prefix + "(Bypassing)")
+                    sender.sendMessage("$prefix(Bypassing)")
                 } else {
                     return true
                 }
@@ -124,18 +127,18 @@ class MIPlugin : JavaPlugin() {
                         when (args[0]) {
                             "myskill" -> {
 
-                                if (!skill.currentPlayerData.containsKey(sender.uniqueId) || skill.currentPlayerData[sender.uniqueId] == null || skill.currentPlayerData[sender.uniqueId]!!.isEmpty()) {
-                                    val p = mutableMapOf<Int, Int>()
-
-                                    for(i in 0 until skills.size){
-                                        p[i+1] = 0
-                                    }
-                                    skill.currentPlayerData.put(sender.uniqueId, p)
-                                }
-
-                                if (!player_slimit.containsKey(sender.uniqueId) || player_slimit[sender.uniqueId] == null){
-                                    player_slimit[sender.uniqueId] = 500
-                                }
+//                                if (!skill.currentPlayerData.containsKey(sender.uniqueId) || skill.currentPlayerData[sender.uniqueId] == null || skill.currentPlayerData[sender.uniqueId]!!.isEmpty()) {
+//                                    val p = mutableMapOf<Int, Int>()
+//
+//                                    for(i in 0 until skills.size){
+//                                        p[i+1] = 0
+//                                    }
+//                                    skill.currentPlayerData[sender.uniqueId] = p
+//                                }
+//
+//                                if (!player_slimit.containsKey(sender.uniqueId) || player_slimit[sender.uniqueId] == null){
+//                                    player_slimit[sender.uniqueId] = 500
+//                                }
 
                                 var skillId = 1
                                 for (skill in skills) {
@@ -154,7 +157,7 @@ class MIPlugin : JavaPlugin() {
                                         }
                                     }
                                     val skillArrow = "§8 " + "〉".repeat(7 - skill.name.length)
-                                    val level = this.skill.currentPlayerData[sender.uniqueId]!![skillId]!!
+                                    val level = currentPlayerData[sender.uniqueId]!![skillId]!!
                                     sender.sendMessage(prefix +
                                             "§b " + skill.name +
                                             skillArrow +
@@ -190,8 +193,9 @@ class MIPlugin : JavaPlugin() {
                                 return true
                             }
                             "save" ->{
-                                val set = setPlayerData(this)
-                                set.start()
+                                Thread(Runnable {
+                                    skill.save()
+                                }).start()
                                 return true
                             }
                         }
@@ -221,7 +225,7 @@ class MIPlugin : JavaPlugin() {
                                 return true
                             }
                             "update" -> {
-                                skill.currentPlayerData[Bukkit.getPlayer(args[1]).uniqueId]!!.clear()
+                                currentPlayerData[Bukkit.getPlayer(args[1]).uniqueId]!!.clear()
                             }
                             "get" -> {
                                 if (machines[args[1]] != null) {
@@ -334,10 +338,10 @@ class MIPlugin : JavaPlugin() {
                                     sender.sendMessage(prefix + "§bLevel value is invalid")
                                     return true
                                 }
-                                if (!skill.currentPlayerData.containsKey(targetPlayer.uniqueId)){
-                                    skill.currentPlayerData[targetPlayer.uniqueId] = mutableMapOf(args[2].toInt() to level)
+                                if (!currentPlayerData.containsKey(targetPlayer.uniqueId)){
+                                    currentPlayerData[targetPlayer.uniqueId] = mutableMapOf(args[2].toInt() to level)
                                 }else{
-                                    val s = skill.currentPlayerData[targetPlayer.uniqueId]
+                                    val s = currentPlayerData[targetPlayer.uniqueId]
                                     s!![args[2].toInt()] = level
                                 }
                                 sender.sendMessage(prefix + "§bLevel set")

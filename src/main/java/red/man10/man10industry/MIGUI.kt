@@ -73,7 +73,7 @@ class MIGUI(val pl: MIPlugin): Listener {
                     e.isCancelled = true
                     val machineKey = inv.getItem(e.slot).itemMeta.lore.first().removePrefix("§8")
 
-                    val skillData = pl.skill.currentPlayerData[e.whoClicked.uniqueId]!!
+                    val skillData = pl.currentPlayerData[e.whoClicked.uniqueId]!!
                     val inputs = mutableListOf<ItemStack>()
                     for (slot in 0 until 45) {
                         if (inv.getItem(slot) != null) {
