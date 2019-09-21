@@ -5,6 +5,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.event.player.PlayerQuitEvent
 import red.man10.MIPlugin
 
 
@@ -37,6 +38,14 @@ class MIListener(val pl: MIPlugin): Listener {
 
         Thread(Runnable {
             pl.skill.load(e.player)
+        }).start()
+
+    }
+
+    @EventHandler
+    fun onPlayerLeft(e:PlayerQuitEvent){
+        Thread(Runnable {
+            pl.skill.save(e.player)
         }).start()
 
     }

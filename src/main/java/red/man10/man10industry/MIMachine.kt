@@ -8,7 +8,6 @@ import org.bukkit.Bukkit
 import red.man10.MIPlugin
 import red.man10.PlayerSkillData
 import red.man10.man10industry.models.Machine
-import java.util.*
 
 
 class MIMachine(val pl: MIPlugin) {
@@ -88,7 +87,7 @@ class MIMachine(val pl: MIPlugin) {
 //                    pla.sendMessage(r2.toString() + "/" + min.toString() + "/" + pl.player_slimit[pla.uniqueId]!! + "/" + p[i]!!)
                     if (min < r2 && p[i]!! < 100 && pl.player_slimit[pla.uniqueId]!! > 0) {
                         pla.sendMessage("${pl.prefix}§e${pl.skills[i-1].name}スキル§aがレベルアップしました！§6[§f${p[i]!!}Lv->${p[i]!! + 1}Lv§6]")
-                        val s = pl.currentPlayerData[pla.uniqueId]
+                        val s = pl.playerData[pla.uniqueId]
                         s!![i] = p[i]!! + 1
                         pl.player_slimit[pla.uniqueId] = pl.player_slimit[pla.uniqueId]!! - 1
                     }

@@ -3,6 +3,7 @@ package red.man10.man10industry
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import red.man10.MIPlugin
+import red.man10.PlayerSkillData
 import java.util.*
 
 class MISkillData(val pl: MIPlugin) {
@@ -14,7 +15,7 @@ class MISkillData(val pl: MIPlugin) {
 
         cs.sendMessage("${pl.prefix}§aセーブ開始")
 
-        val skill = pl.currentPlayerData
+        val skill = pl.playerData
 
         val mysql = MySQLManager(pl,"MISET")
 
@@ -33,10 +34,30 @@ class MISkillData(val pl: MIPlugin) {
 
     }
 
+    fun save(p:Player){
+        val cs = Bukkit.getConsoleSender()
+
+        cs.sendMessage("${pl.prefix}§aセーブ開始")
+
+        val mysql = MySQLManager(pl,"MISET")
+
+
+        for (skill in pl.playerData[p.uniqueId]!!){
+            mysql.execute("UPDATE player_data set level = '${skill.value}' where player_uuid = '${p.uniqueId}' and skill_id = '${skill.key}'")
+        }
+        mysql.execute("UPDATE `player_skill_limit` SET `skill_limit`='${pl.player_slimit[p.uniqueId]}' WHERE `uuid`='${p.uniqueId}'")
+
+        pl.player_slimit.remove(p.uniqueId)
+        pl.playerData.remove(p.uniqueId)
+
+        cs.sendMessage("${pl.prefix}§aセーブ完了")
+
+    }
+
 
     fun load(p: Player){
 
-        pl.currentPlayerData[p.uniqueId] = mutableMapOf()
+        val map = PlayerSkillData()
 
         val mysql = MySQLManager(pl,"mi load")
 
@@ -51,8 +72,10 @@ class MISkillData(val pl: MIPlugin) {
         data.beforeFirst()
 
         while (data.next()){
-            pl.currentPlayerData[p.uniqueId] = mutableMapOf(data.getInt("skill_id") to data.getInt("level"))
+            map[data.getInt("skill_id")] = data.getInt("level")
         }
+
+        pl.playerData[p.uniqueId] = map
 
         data.close()
 

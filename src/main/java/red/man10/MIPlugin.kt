@@ -15,7 +15,7 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.HashMap
 
-typealias PlayerSkillData = MutableMap<Int, Int>
+typealias PlayerSkillData = HashMap<Int,Int>
 
 class MIPlugin : JavaPlugin() {
 
@@ -35,7 +35,7 @@ class MIPlugin : JavaPlugin() {
     var skills = mutableListOf<Skill>()
     var machines = HashMap<String, Machine>()
 
-    val currentPlayerData= ConcurrentHashMap<UUID, PlayerSkillData>()
+    val playerData= ConcurrentHashMap<UUID, PlayerSkillData>()
 
     val player_slimit = ConcurrentHashMap<UUID, Int>()
 
@@ -157,7 +157,14 @@ class MIPlugin : JavaPlugin() {
                                         }
                                     }
                                     val skillArrow = "§8 " + "〉".repeat(7 - skill.name.length)
-                                    val level = currentPlayerData[sender.uniqueId]!![skillId]!!
+
+                                    if(playerData[sender.uniqueId]!![skillId] == null){
+                                        Bukkit.getLogger().info(skillId.toString())
+                                        Bukkit.getLogger().info("nullでーすｗｗｗｗ")
+                                        return true
+                                    }
+
+                                    val level = playerData[sender.uniqueId]!![skillId]!!
                                     sender.sendMessage(prefix +
                                             "§b " + skill.name +
                                             skillArrow +
@@ -225,7 +232,7 @@ class MIPlugin : JavaPlugin() {
                                 return true
                             }
                             "update" -> {
-                                currentPlayerData[Bukkit.getPlayer(args[1]).uniqueId]!!.clear()
+                                playerData[Bukkit.getPlayer(args[1]).uniqueId]!!.clear()
                             }
                             "get" -> {
                                 if (machines[args[1]] != null) {
@@ -338,10 +345,10 @@ class MIPlugin : JavaPlugin() {
                                     sender.sendMessage(prefix + "§bLevel value is invalid")
                                     return true
                                 }
-                                if (!currentPlayerData.containsKey(targetPlayer.uniqueId)){
-                                    currentPlayerData[targetPlayer.uniqueId] = mutableMapOf(args[2].toInt() to level)
+                                if (!playerData.containsKey(targetPlayer.uniqueId)){
+                                    playerData[targetPlayer.uniqueId]!![args[2].toInt()] = level
                                 }else{
-                                    val s = currentPlayerData[targetPlayer.uniqueId]
+                                    val s = playerData[targetPlayer.uniqueId]
                                     s!![args[2].toInt()] = level
                                 }
                                 sender.sendMessage(prefix + "§bLevel set")
