@@ -68,7 +68,7 @@ class MISkillData(val pl: MIPlugin) {
 
         if (!data.next()){
             for (i in 0 until pl.skills.size){
-                mysql.execute("INSERT INTO `man10industry`.`player_data` (`player_uuid`, `skill_id`, `level`) VALUES ('${p.uniqueId}', '${i+1}', '0');")
+                mysql.execute("INSERT INTO player_data (`player_uuid`, `skill_id`, `level`) VALUES ('${p.uniqueId}', '${i+1}', '0');")
             }
         }
         data = mysql.query("SELECT * FROM player_data WHERE player_uuid='${p.uniqueId}'")
@@ -86,7 +86,7 @@ class MISkillData(val pl: MIPlugin) {
         val limit = mysql.query("SELECT * from player_skill_limit")
 
         if (!limit.next()){
-            mysql.execute("INSERT INTO `man10industry`.`player_skill_limit` (`uuid`) VALUES ('${p.uniqueId}');")
+            mysql.execute("INSERT INTO player_skill_limit (`uuid`) VALUES ('${p.uniqueId}');")
         }
 
         limit.beforeFirst()
