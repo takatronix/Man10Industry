@@ -77,19 +77,33 @@ class MIMachine(val pl: MIPlugin) {
 
 
                 val r = Math.random()
+                Bukkit.getLogger().info("${pla.name} craft chance")
 
                 if (min >= r){
+                    Bukkit.getLogger().info("${pla.name} craft success")
                     flags.add(true)
                 }else{
+                    Bukkit.getLogger().info("${pla.name} craft failed")
                     flags.add(false)
 
                     val r2 = Math.random()
-//                    pla.sendMessage(r2.toString() + "/" + min.toString() + "/" + pl.player_slimit[pla.uniqueId]!! + "/" + p[i]!!)
+
+                    Bukkit.getLogger().info("${pla.name} level up chance")
+
+                    if (p[i] == null){
+                        Bukkit.getLogger().info("${pla.name}, player skill data is null")
+                    }
+                    if (pl.player_slimit[pla.uniqueId] == null){
+                        Bukkit.getLogger().info("${pla.name}, player skill limit is null")
+                    }
+
                     if (min < r2 && p[i]!! < 100 && pl.player_slimit[pla.uniqueId]!! > 0) {
                         pla.sendMessage("${pl.prefix}§e${pl.skills[i-1].name}スキル§aがレベルアップしました！§6[§f${p[i]!!}Lv->${p[i]!! + 1}Lv§6]")
                         val s = pl.playerData[pla.uniqueId]
                         s!![i] = p[i]!! + 1
                         pl.player_slimit[pla.uniqueId] = pl.player_slimit[pla.uniqueId]!! - 1
+
+                        Bukkit.getLogger().info("${pla.name} level up")
                     }
 
                 }

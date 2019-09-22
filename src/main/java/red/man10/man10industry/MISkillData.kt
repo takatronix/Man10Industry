@@ -83,17 +83,18 @@ class MISkillData(val pl: MIPlugin) {
 
         mysql.close()
 
-        val limit = mysql.query("SELECT * from player_skill_limit")
+        var limit = mysql.query("SELECT * from player_skill_limit")
 
         if (!limit.next()){
             mysql.execute("INSERT INTO player_skill_limit (`uuid`) VALUES ('${p.uniqueId}');")
+            Bukkit.getLogger().info("insert skill limit")
         }
 
-        limit.beforeFirst()
+        limit = mysql.query("SELECT * from player_skill_limit")
 
-        while (limit.next()){
-            pl.player_slimit[UUID.fromString(limit.getString("uuid"))] = limit.getInt("skill_limit")
-        }
+        limit.next()
+
+        pl.player_slimit[p.uniqueId] = limit.getInt("skill_limit")
         limit.close()
 
         mysql.close()
