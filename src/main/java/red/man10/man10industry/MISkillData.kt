@@ -61,15 +61,17 @@ class MISkillData(val pl: MIPlugin) {
 
         val mysql = MySQLManager(pl,"mi load")
 
-        val data = mysql.query("SELECT * FROM player_data WHERE player_uuid='${p.uniqueId}'")
+        pl.playerData.remove(p.uniqueId)
+        pl.player_slimit.remove(p.uniqueId)
+
+        var data = mysql.query("SELECT * FROM player_data WHERE player_uuid='${p.uniqueId}'")
 
         if (!data.next()){
             for (i in 0 until pl.skills.size){
-                mysql.execute("INSERT INTO `man10industry`.`player_data` (`player_uuid`, `skill_id`, `level`) VALUES ('${p.uniqueId}', '$i', '0');")
+                mysql.execute("INSERT INTO `man10industry`.`player_data` (`player_uuid`, `skill_id`, `level`) VALUES ('${p.uniqueId}', '${i+1}', '0');")
             }
         }
-
-        data.beforeFirst()
+        data = mysql.query("SELECT * FROM player_data WHERE player_uuid='${p.uniqueId}'")
 
         while (data.next()){
             map[data.getInt("skill_id")] = data.getInt("level")
@@ -96,6 +98,14 @@ class MISkillData(val pl: MIPlugin) {
 
         mysql.close()
         Bukkit.getLogger().info("${p.name} ... loaded")
+    }
+
+    fun delete(p:Player){
+        val mysql = MySQLManager(pl,"MIDELETE")
+
+        mysql.execute("DELETE FROM `player_data` WHERE  `player_uuid`='${p.uniqueId}';")
+
+        mysql.execute("DELETE FROM `player_skill_limit` WHERE `uuid`='${p.uniqueId}';")
     }
 
 

@@ -58,7 +58,7 @@ class MIMachine(val pl: MIPlugin) {
 
             if (skillid.size == 0) return mutableListOf(ItemStack(Material.AIR))
 
-            var flags = mutableListOf<Boolean>()
+            val flags = mutableListOf<Boolean>()
 
             for (i in skillid){
                 val level = chance[pl.skills[i]]

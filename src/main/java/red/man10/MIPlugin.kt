@@ -158,11 +158,6 @@ class MIPlugin : JavaPlugin() {
                                     }
                                     val skillArrow = "§8 " + "〉".repeat(7 - skill.name.length)
 
-                                    if(playerData[sender.uniqueId]!![skillId] == null){
-                                        Bukkit.getLogger().info(skillId.toString())
-                                        Bukkit.getLogger().info("nullでーすｗｗｗｗ")
-                                        return true
-                                    }
 
                                     val level = playerData[sender.uniqueId]!![skillId]!!
                                     sender.sendMessage(prefix +
@@ -265,6 +260,15 @@ class MIPlugin : JavaPlugin() {
                                         sender.sendMessage("$prefix§a$recipe")
                                     }
                                 }).start()
+                                return true
+                            }
+                            "fix" ->{
+                                Thread(Runnable {
+                                    skill.delete(Bukkit.getPlayer(args[1]))
+                                    skill.load(Bukkit.getPlayer(args[1]))
+                                    sender.sendMessage("$prefix§afixed player data")
+                                }).start()
+                                return true
                             }
                         }
                     }
