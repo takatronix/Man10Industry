@@ -5,6 +5,7 @@ import org.bukkit.inventory.ItemStack
 import java.awt.Graphics2D
 import org.bukkit.entity.Player
 import org.bukkit.Bukkit
+import org.bukkit.inventory.Inventory
 import red.man10.MIPlugin
 import red.man10.PlayerSkillData
 import red.man10.man10industry.models.Machine
@@ -77,25 +78,13 @@ class MIMachine(val pl: MIPlugin) {
 
 
                 val r = Math.random()
-                Bukkit.getLogger().info("${pla.name} craft chance")
 
                 if (min >= r){
-                    Bukkit.getLogger().info("${pla.name} craft success")
                     flags.add(true)
                 }else{
-                    Bukkit.getLogger().info("${pla.name} craft failed")
                     flags.add(false)
 
                     val r2 = Math.random()
-
-                    Bukkit.getLogger().info("${pla.name} level up chance")
-
-                    if (p[i] == null){
-                        Bukkit.getLogger().info("${pla.name}, player skill data is null")
-                    }
-                    if (pl.player_slimit[pla.uniqueId] == null){
-                        Bukkit.getLogger().info("${pla.name}, player skill limit is null")
-                    }
 
                     if (min < r2 && p[i]!! < 100 && pl.player_slimit[pla.uniqueId]!! > 0) {
                         pla.sendMessage("${pl.prefix}§e${pl.skills[i-1].name}スキル§aがレベルアップしました！§6[§f${p[i]!!}Lv->${p[i]!! + 1}Lv§6]")
@@ -103,7 +92,6 @@ class MIMachine(val pl: MIPlugin) {
                         s!![i] = p[i]!! + 1
                         pl.player_slimit[pla.uniqueId] = pl.player_slimit[pla.uniqueId]!! - 1
 
-                        Bukkit.getLogger().info("${pla.name} level up")
                     }
 
                 }
@@ -116,6 +104,103 @@ class MIMachine(val pl: MIPlugin) {
 
         }
         return mutableListOf(ItemStack(Material.AIR))
+    }
+
+
+    fun stackProcess(p: PlayerSkillData, machine: Machine, inputs: MutableList<ItemStack>, pla: Player): MutableList<ItemStack> {
+
+        val splitInput = mutableListOf<ItemStack>()
+        val inputAmount = mutableListOf<Int>()
+
+        for (inp in inputs){
+            if (inp.type == Material.AIR){
+                splitInput.add(inp)
+                continue
+            }
+
+            if (inp.amount == 0){
+                return inputs
+            }
+
+            inputAmount.add(inp.amount)
+
+            inp.amount = 1
+
+            splitInput.add(inp)
+
+        }
+
+        var continueItemAmount = 0
+
+        for (recipe in machine.recipes){
+            if (recipe.inputs != splitInput)continue
+
+            val chance = recipe.chanceSets
+            val skillid = mutableListOf<Int>()
+            for (c in chance) {
+                for (i in 0 until pl.skills.size) {
+                    if (pl.skills[i] == c.key){
+                        skillid.add(i)
+                        continue
+                    }
+                }
+            }
+
+            for (i in skillid){
+                val level = chance[pl.skills[i]]
+
+                if (p[i]!! < level!!.req+30 ){
+                    pla.sendMessage("${pl.prefix}§cレベルが足りません")
+                    return inputs
+                }
+                var min = 0.0
+                for (l in level.chances){
+                    if (p[i]!! >= l.key){
+                        min = l.value
+                    }
+                }
+
+
+                for (i2 in 0 until inputAmount.min()!!){
+
+                    val r = Math.random()
+
+                    if (min >= r){
+                        continueItemAmount ++
+                    }else{
+
+                        val r2 = Math.random()
+                        pla.sendMessage("${pl.prefix}§4クラフト失敗")
+
+                        if (min < r2 && p[i]!! < 100 && pl.player_slimit[pla.uniqueId]!! > 0) {
+                            pla.sendMessage("${pl.prefix}§e${pl.skills[i-1].name}スキル§aがレベルアップしました！§6[§f${p[i]!!}Lv->${p[i]!! + 1}Lv§6]")
+                            val s = pl.playerData[pla.uniqueId]
+                            s!![i] = p[i]!! + 1
+                            pl.player_slimit[pla.uniqueId] = pl.player_slimit[pla.uniqueId]!! - 1
+
+                        }
+                    }
+                }
+            }
+
+            pla.sendMessage("${pl.prefix}§aクラフト成功:§l${continueItemAmount}回")
+
+            if (continueItemAmount == 0){
+                return inputs
+            }
+            val output = mutableListOf<ItemStack>()
+
+            for (i3 in 0 until continueItemAmount){
+                for (item in recipe.outputs){
+                    if (item.type == Material.AIR)continue
+                    output.add(item)
+                }
+            }
+            return output
+        }
+
+        pla.sendMessage("${pl.prefix}§4レシピが違います")
+        return inputs
     }
 
     fun createMapItem(machineKey: String): ItemStack {

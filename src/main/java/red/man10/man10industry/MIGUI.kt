@@ -23,6 +23,10 @@ class MIGUI(val pl: MIPlugin): Listener {
             val rightArrow = createItem(Material.STAINED_GLASS_PANE, 5, "§b§lクリックで§e§l加工!", mutableListOf("§8"  + machineId))
             placeItem(rightArrow, inv, mutableListOf(49))
 
+            val stack = createItem(Material.STAINED_GLASS_PANE,5,"§b§lスタック加工",mutableListOf("§8"  + machineId,"§4§l処理に時間がかかります！","§f最低レベル+30"))
+            placeItem(stack,inv, mutableListOf(47))
+            placeItem(stack,inv, mutableListOf(51))
+
             p.openInventory(inv)
         } else {
             p.sendMessage(pl.prefix + "Machine §e" + machineId + " §bdoesn't exists.")
@@ -69,6 +73,47 @@ class MIGUI(val pl: MIPlugin): Listener {
                     }
                 }
 
+                if (e.slot == 47 || e.slot == 51){
+
+                    p.sendMessage("${pl.prefix}§bクラフトアイテムの処理中....§kX")
+
+                    e.isCancelled = true
+
+                    Bukkit.getScheduler().runTask(pl){
+
+                        val machineKey = inv.getItem(e.slot).itemMeta.lore.first().removePrefix("§8")
+
+                        val skillData = pl.playerData[e.whoClicked.uniqueId]!!
+                        val inputs = mutableListOf<ItemStack>()
+                        for (slot in 0 until 45) {
+                            if (inv.getItem(slot) != null) {
+                                inputs.add(inv.getItem(slot))
+                            }else{
+                                inputs.add(ItemStack(Material.AIR))
+                            }
+                        }
+
+                        val out = pl.machine.stackProcess(skillData, pl.machines[machineKey]!!, inputs, p)
+
+                        if (out != inputs){
+                            p.sendMessage("${pl.prefix}§a完成品を並べています....§kX")
+
+                            val i = Bukkit.createInventory(null,54,"${pl.prefix}§b完成品")
+
+                            for (o in out){
+                                if (o.type == Material.AIR)continue
+                                i.addItem(o)
+                            }
+
+                            p.openInventory(i)
+                        } else{
+                            p.openInventory(e.inventory)
+                        }
+                    }
+
+                    return
+                }
+
                 if (arrowSlots.contains(e.slot)) {
                     e.isCancelled = true
                     val machineKey = inv.getItem(e.slot).itemMeta.lore.first().removePrefix("§8")
@@ -82,7 +127,7 @@ class MIGUI(val pl: MIPlugin): Listener {
                             inputs.add(ItemStack(Material.AIR))
                         }
                     }
-                    val outputs = pl.machine.process(skillData, pl.machines[machineKey]!!, inputs, e.whoClicked as Player)
+                    val outputs = pl.machine.process(skillData, pl.machines[machineKey]!!, inputs, p)
                     if (outputs == mutableListOf(ItemStack(Material.AIR))){
                         p.sendMessage("${pl.prefix}§bレシピが間違ってます")
                         return
@@ -101,10 +146,8 @@ class MIGUI(val pl: MIPlugin): Listener {
                         inv.setItem(slot, ItemStack(Material.AIR))
                     }
 
-                    var count = 0
-                    for (item in outputs) {
+                    for ((count, item) in outputs.withIndex()) {
                         inv.setItem(count, item)
-                        count++
                     }
                     p.playSound(p.location, "success", 1f, 1f)
                     p.sendMessage("${pl.prefix}§a作成に成功しました")
