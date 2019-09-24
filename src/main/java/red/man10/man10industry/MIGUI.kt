@@ -73,47 +73,6 @@ class MIGUI(val pl: MIPlugin): Listener {
                     }
                 }
 
-                if (e.slot == 47 || e.slot == 51){
-
-                    p.sendMessage("${pl.prefix}§bクラフトアイテムの処理中....§kX")
-
-                    e.isCancelled = true
-
-                    Bukkit.getScheduler().runTask(pl){
-
-                        val machineKey = inv.getItem(e.slot).itemMeta.lore.first().removePrefix("§8")
-
-                        val skillData = pl.playerData[e.whoClicked.uniqueId]!!
-                        val inputs = mutableListOf<ItemStack>()
-                        for (slot in 0 until 45) {
-                            if (inv.getItem(slot) != null) {
-                                inputs.add(inv.getItem(slot))
-                            }else{
-                                inputs.add(ItemStack(Material.AIR))
-                            }
-                        }
-
-                        val out = pl.machine.stackProcess(skillData, pl.machines[machineKey]!!, inputs, p)
-
-                        if (out != inputs){
-                            p.sendMessage("${pl.prefix}§a完成品を並べています....§kX")
-
-                            val i = Bukkit.createInventory(null,54,"${pl.prefix}§b完成品")
-
-                            for (o in out){
-                                if (o.type == Material.AIR)continue
-                                i.addItem(o)
-                            }
-
-                            p.openInventory(i)
-                        } else{
-                            p.openInventory(e.inventory)
-                        }
-                    }
-
-                    return
-                }
-
                 if (arrowSlots.contains(e.slot)) {
                     e.isCancelled = true
                     val machineKey = inv.getItem(e.slot).itemMeta.lore.first().removePrefix("§8")
