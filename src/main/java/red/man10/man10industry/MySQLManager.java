@@ -93,7 +93,7 @@ public class MySQLManager {
     }
 
     ////////////////////////////////
-    //       接続
+    //   connect
     ////////////////////////////////
     public Boolean Connect(String host, String db, String user, String pass,String port) {
         this.HOST = host;
@@ -121,7 +121,7 @@ public class MySQLManager {
     }
 
     ////////////////////////////////
-    //     行数を数える
+    //     counting rows
     ////////////////////////////////
     public int countRows(String table) {
         int count = 0;
@@ -138,7 +138,7 @@ public class MySQLManager {
         return count;
     }
     ////////////////////////////////
-    //     レコード数
+    //     counting recode
     ////////////////////////////////
     public int count(String table) {
         int count = 0;
@@ -155,7 +155,7 @@ public class MySQLManager {
         return count;
     }
     ////////////////////////////////
-    //      実行
+    //      execute
     ////////////////////////////////
     public boolean execute(String query) {
         this.MySQL = new MySQLFunc(this.HOST, this.DB, this.USER, this.PASS,this.PORT);
@@ -184,7 +184,7 @@ public class MySQLManager {
     }
 
     ////////////////////////////////
-    //      クエリ
+    //      query
     ////////////////////////////////
     public ResultSet query(String query) {
         this.MySQL = new  MySQLFunc(this.HOST, this.DB, this.USER, this.PASS,this.PORT);

@@ -20,7 +20,7 @@ class MIConfig(val pl: MIPlugin) {
             cs.sendMessage(pl.prefix + "§bLoading all configurations...")
             loadChanceSets(cs)
             loadSkills(cs)
-            loadRecipes()
+            loadRecipes(cs)
             loadMachines(cs)
 
             if (isFirst) {
@@ -58,7 +58,7 @@ class MIConfig(val pl: MIPlugin) {
     }
 
     fun createRecipe(id:String,chance:String){
-        MySQLManager(pl,"MIrecipe").execute("INSERT INTO recipes (recipe_id,chance_set) VALUES($id,$chance);")
+        MySQLManager(pl,"MIrecipe").execute("INSERT INTO recipes (recipe_id,chance_set) VALUES('$id','$chance');")
         Bukkit.getLogger().info("created new recipe")
     }
 
@@ -143,22 +143,22 @@ class MIConfig(val pl: MIPlugin) {
         cs.sendMessage(pl.prefix + "§eChance Sets:")
         for (chanceSetKey in chanceSetKeys) {
             val isCorrect = (
-                    ymlFile.getKeys(true).contains(chanceSetKey + ".req") &&
-                    ymlFile.getKeys(true).contains(chanceSetKey + ".map")
+                    ymlFile.getKeys(true).contains("$chanceSetKey.req") &&
+                    ymlFile.getKeys(true).contains("$chanceSetKey.map")
                     )
             if (isCorrect) {
 
                 val map = HashMap<Int, Double>()
 
                 for (key in ymlFile.getConfigurationSection("${chanceSetKey}.map").getKeys(false)) {
-                    map.put( key.toInt(), ymlFile.getDouble("${chanceSetKey}.map.${key}") )
+                    map[key.toInt()] = ymlFile.getDouble("${chanceSetKey}.map.${key}")
                 }
 
                 val newChanceSet = ChanceSet(
-                        ymlFile.getInt(chanceSetKey + ".req"),
+                        ymlFile.getInt("$chanceSetKey.req"),
                         map
                 )
-                pl.chanceSets.put(chanceSetKey, newChanceSet)
+                pl.chanceSets[chanceSetKey] = newChanceSet
                 cs.sendMessage(pl.prefix + "§a" + chanceSetKey + " ○")
             } else {
                 cs.sendMessage(pl.prefix + "§c" + chanceSetKey + " ×")
@@ -246,21 +246,26 @@ class MIConfig(val pl: MIPlugin) {
 //        }
 //    }
 
-    private fun loadRecipes(){
+    private fun loadRecipes(cs:CommandSender){
         val mysql = MySQLManager(pl,"MIrecipe")
 
         val rs = mysql.query("SELECT * FROM recipes")
 
         while (rs.next()){
-            val input = pl.util.itemStackArrayFromBase64(rs.getString("input"))
-            val output = pl.util.itemStackArrayFromBase64(rs.getString("output"))
-            val chance = HashMap<Skill,ChanceSet>()
-            val data = rs.getString("chance_set").split(",")
-            for (d in data){
-                val split = d.split(":")
-                chance[pl.skills[split[0].toInt()]] = pl.chanceSets[split[1]]!!
+            try{
+                val input = pl.util.itemStackArrayFromBase64(rs.getString("input"))
+                val output = pl.util.itemStackArrayFromBase64(rs.getString("output"))
+                val chance = HashMap<Skill,ChanceSet>()
+                val data = rs.getString("chance_set").split(",")
+                for (d in data){
+                    val split = d.split(":")
+                    chance[pl.skills[split[0].toInt()]] = pl.chanceSets[split[1]]!!
+                }
+                pl.recipies[rs.getString("recipe_id")] = Recipe(input,output,chance)
+                cs.sendMessage(pl.prefix + "§a" + rs.getString("recipe_id")+ " ○")
+            }catch (e:Exception){
+                cs.sendMessage(e.message)
             }
-            pl.recipies[rs.getString("recipe_id")] = Recipe(input,output,chance)
         }
         rs.close()
         mysql.close()

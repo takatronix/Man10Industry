@@ -23,9 +23,6 @@ class MIGUI(val pl: MIPlugin): Listener {
             val rightArrow = createItem(Material.STAINED_GLASS_PANE, 5, "§b§lクリックで§e§l加工!", mutableListOf("§8"  + machineId))
             placeItem(rightArrow, inv, mutableListOf(49))
 
-            val stack = createItem(Material.STAINED_GLASS_PANE,5,"§b§lスタック加工",mutableListOf("§8"  + machineId,"§4§l処理に時間がかかります！","§f最低レベル+30"))
-            placeItem(stack,inv, mutableListOf(47))
-            placeItem(stack,inv, mutableListOf(51))
 
             p.openInventory(inv)
         } else {
@@ -131,11 +128,11 @@ class MIGUI(val pl: MIPlugin): Listener {
 
                     val recipeKey = inv.getItem(49).itemMeta.lore.first().removePrefix("§8")
 
-                    if (inv.title == (pl.prefix + "§0Set Input")) {
-                        pl.recipies[recipeKey]!!.inputs = items
-                    } else {
-                        pl.recipies[recipeKey]!!.outputs = items
-                    }
+//                    if (inv.title == (pl.prefix + "§0Set Input")) {
+//                        pl.recipies[recipeKey]!!.inputs = items
+//                    } else {
+//                        pl.recipies[recipeKey]!!.outputs = items
+//                    }
 
                     val encodedItems = pl.util.itemStackArrayToBase64(items.toTypedArray())
 //                    print(encodedItems)
@@ -145,6 +142,7 @@ class MIGUI(val pl: MIPlugin): Listener {
                         pl.config.setOutput(encodedItems, recipeKey)
                     }
                     p.closeInventory()
+                    p.sendMessage("${pl.prefix}§bYou have to reload plugin /mi reload.")
 
                 }
             }

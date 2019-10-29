@@ -210,19 +210,11 @@ class MIPlugin : JavaPlugin() {
                                 return true
                             }
                             "setinput" -> {
-                                if (recipies[args[1]] != null) {
-                                    gui.openInputSetView(sender, args[1])
-                                } else {
-                                    sender.sendMessage(prefix + "Recipe doesn't exist.")
-                                }
+                                gui.openInputSetView(sender, args[1])
                                 return true
                             }
                             "setoutput" -> {
-                                if (recipies[args[1]] != null) {
-                                    gui.openOutputSetView(sender, args[1])
-                                } else {
-                                    sender.sendMessage(prefix + "Recipe doesn't exist.")
-                                }
+                                gui.openOutputSetView(sender, args[1])
                                 return true
                             }
                             "update" -> {

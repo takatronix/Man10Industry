@@ -76,6 +76,8 @@ class MIMachine(val pl: MIPlugin) {
                     }
                 }
 
+                println(min)
+
                 if (min < Math.random()){
 
                     flags = false
