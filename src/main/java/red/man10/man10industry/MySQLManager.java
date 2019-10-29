@@ -57,6 +57,13 @@ public class MySQLManager {
                 ") ENGINE=InnoDB DEFAULT CHARSET=utf8;");
 
 
+        execute("CREATE TABLE if not exists `recipes` (" +
+                "`recipe_id`  TEXT NULL DEFAULT NULL,\n" +
+                "`chance_set` TEXT NULL DEFAULT NULL,\n" +
+                "`input` TEXT NULL DEFAULT NULL,\n" +
+                "`output` TEXT NULL DEFAULT NULL\n" +
+                ");");
+
         if(!this.connected) {
             plugin.getLogger().info("Unable to establish a MySQL connection.");
         }

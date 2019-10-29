@@ -94,7 +94,6 @@ class MIPlugin : JavaPlugin() {
             saveResource("images/ik.png", false)
             saveResource("images/melter.png", false)
             saveResource("chance_sets.yml", false)
-            saveResource("recipes.yml", false)
             saveResource("machines.yml", false)
             saveResource("skills.yml", false)
 

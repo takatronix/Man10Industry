@@ -20,7 +20,7 @@ class MIConfig(val pl: MIPlugin) {
             cs.sendMessage(pl.prefix + "§bLoading all configurations...")
             loadChanceSets(cs)
             loadSkills(cs)
-            loadRecipes(cs)
+            loadRecipes()
             loadMachines(cs)
 
             if (isFirst) {
@@ -35,19 +35,15 @@ class MIConfig(val pl: MIPlugin) {
     }
 
     fun setInput(encodedItems: String, recipeKey: String) {
-        val file = loadFile("recipes", Bukkit.getConsoleSender())
-        val ymlFile = YamlConfiguration.loadConfiguration(file)
-        ymlFile.set(recipeKey + ".inputs", encodedItems)
+        MySQLManager(pl,"MIRecipe").execute("UPDATE recipes SET input=" +
+                "'$encodedItems' WHERE recipe_id='$recipeKey'")
 
-        ymlFile.save(file)
     }
 
     fun setOutput(encodedItems: String, recipeKey: String) {
-        val file = loadFile("recipes", Bukkit.getConsoleSender())
-        val ymlFile = YamlConfiguration.loadConfiguration(file)
-        ymlFile.set(recipeKey + ".outputs", encodedItems)
+        MySQLManager(pl,"MIRecipe").execute("UPDATE recipes SET output=" +
+                "'$encodedItems' WHERE recipe_id='$recipeKey'")
 
-        ymlFile.save(file)
     }
 
     fun createMachine(id :String,name:String,image:String){
@@ -62,18 +58,7 @@ class MIConfig(val pl: MIPlugin) {
     }
 
     fun createRecipe(id:String,chance:String){
-        val file = loadFile("recipes", Bukkit.getConsoleSender())
-        val ymlFile = YamlConfiguration.loadConfiguration(file)
-
-        ymlFile.createSection(id)
-        val chanceData = chance.split(",")
-        for (data in chanceData){
-            val d = data.split(":")
-            ymlFile.set("$id.chance_sets.${d[0]}",d[1])
-        }
-        ymlFile.set("$id.inputs",null)
-        ymlFile.set("$id.outputs",null)
-        ymlFile.save(file)
+        MySQLManager(pl,"MIrecipe").execute("INSERT INTO recipes (recipe_id,chance_set) VALUES($id,$chance);")
         Bukkit.getLogger().info("created new recipe")
     }
 
@@ -130,11 +115,7 @@ class MIConfig(val pl: MIPlugin) {
         Bukkit.getLogger().info("delete machine")
     }
     fun deleteRecipe(recipeId: String){
-        val file = loadFile("recipes",Bukkit.getConsoleSender())
-        val ymlFile = YamlConfiguration.loadConfiguration(file)
-
-        ymlFile.set(recipeId,null)
-        ymlFile.save(file)
+        MySQLManager(pl,"Mirecipe").execute("DELETE FROM recipes WHERE recipe_id='$recipeId';")
         Bukkit.getLogger().info("delete recipe")
     }
     fun deleteChance(chanceId:String){
@@ -183,7 +164,7 @@ class MIConfig(val pl: MIPlugin) {
                 cs.sendMessage(pl.prefix + "§c" + chanceSetKey + " ×")
             }
         }
-        print(pl.chanceSets)
+//        print(pl.chanceSets)
     }
 
     private fun loadSkills(cs: CommandSender) {
@@ -209,11 +190,11 @@ class MIConfig(val pl: MIPlugin) {
             } else {
                 cs.sendMessage(pl.prefix + "§a" + i + " ×")
             }
-            when {
-                i <= 4 -> skillGenre = SkillGenre.Craft
-                i <= 8 -> skillGenre = SkillGenre.Magic
-                i <= 12 -> skillGenre = SkillGenre.Study
-                else -> skillGenre = SkillGenre.Special
+            skillGenre = when {
+                i <= 4 -> SkillGenre.Craft
+                i <= 8 -> SkillGenre.Magic
+                i <= 12 -> SkillGenre.Study
+                else -> SkillGenre.Special
             }
         }
         pl.skills = newSkills
@@ -223,47 +204,66 @@ class MIConfig(val pl: MIPlugin) {
 //        }
     }
 
-    private fun loadRecipes(cs: CommandSender) {
-        val file = loadFile("recipes", cs)
+//    private fun loadRecipes(cs: CommandSender) {
+//        val file = loadFile("recipes", cs)
+//
+//        pl.recipies.clear()
+//        val ymlFile = YamlConfiguration.loadConfiguration(file)
+//        val recipeKeys = ymlFile.getKeys(false)
+//        cs.sendMessage(pl.prefix + "§eRecipes:")
+//        for (recipeKey in recipeKeys) {
+//            //try {
+////            print(ymlFile.getKeys(true))
+//            val isCorrect: Boolean = (
+//                    //ymlFile.getKeys(true).contains(recipeKey + ".inputs") &&
+//                    //ymlFile.getKeys(true).contains(recipeKey + ".outputs") &&
+//                    ymlFile.getKeys(true).contains(recipeKey + ".chance_sets")
+//                    )
+//            if (isCorrect) {
+//                var newInputs = mutableListOf<ItemStack>()
+//                if (ymlFile.getString(recipeKey + ".inputs") != null) {
+//                    newInputs = pl.util.itemStackArrayFromBase64(ymlFile.getString(recipeKey + ".inputs"))
+//                }
+//                var newOutputs = mutableListOf<ItemStack>()
+//                if (ymlFile.getString(recipeKey + ".outputs") != null) {
+//                    newOutputs = pl.util.itemStackArrayFromBase64(ymlFile.getString(recipeKey + ".outputs"))
+//                }
+//                val newChanceSets = HashMap<Skill, ChanceSet>()
+//
+//                for (key in ymlFile.getConfigurationSection("${recipeKey}.chance_sets").getKeys(false)) {
+//                    newChanceSets.put( pl.skills[key.toInt()], pl.chanceSets[ymlFile.getString("${recipeKey}.chance_sets.${key}")]!! )
+//                }
+//                val newRecipe = Recipe(
+//                        newInputs,
+//                        newOutputs,
+//                        newChanceSets
+//                )
+//                pl.recipies.put(recipeKey, newRecipe)
+//                cs.sendMessage(pl.prefix + "§a" + recipeKey + " ○")
+//            } else {
+//                cs.sendMessage(pl.prefix + "§c" + recipeKey + " ×")
+//            }
+//        }
+//    }
 
-        pl.recipies.clear()
-        val ymlFile = YamlConfiguration.loadConfiguration(file)
-        val recipeKeys = ymlFile.getKeys(false)
-        cs.sendMessage(pl.prefix + "§eRecipes:")
-        for (recipeKey in recipeKeys) {
-            //try {
-            print(ymlFile.getKeys(true))
-            val isCorrect: Boolean = (
-                    //ymlFile.getKeys(true).contains(recipeKey + ".inputs") &&
-                    //ymlFile.getKeys(true).contains(recipeKey + ".outputs") &&
-                    ymlFile.getKeys(true).contains(recipeKey + ".chance_sets")
-                    )
-            if (isCorrect) {
-                var newInputs = mutableListOf<ItemStack>()
-                if (ymlFile.getString(recipeKey + ".inputs") != null) {
-                    newInputs = pl.util.itemStackArrayFromBase64(ymlFile.getString(recipeKey + ".inputs"))
-                }
-                var newOutputs = mutableListOf<ItemStack>()
-                if (ymlFile.getString(recipeKey + ".outputs") != null) {
-                    newOutputs = pl.util.itemStackArrayFromBase64(ymlFile.getString(recipeKey + ".outputs"))
-                }
-                val newChanceSets = HashMap<Skill, ChanceSet>()
+    private fun loadRecipes(){
+        val mysql = MySQLManager(pl,"MIrecipe")
 
-                for (key in ymlFile.getConfigurationSection("${recipeKey}.chance_sets").getKeys(false)) {
-                    newChanceSets.put( pl.skills[key.toInt()], pl.chanceSets[ymlFile.getString("${recipeKey}.chance_sets.${key}")]!! )
-                }
-                val newRecipe = Recipe(
-                        newInputs,
-                        newOutputs,
-                        newChanceSets
-                )
-                pl.recipies.put(recipeKey, newRecipe)
-                cs.sendMessage(pl.prefix + "§a" + recipeKey + " ○")
-            } else {
-                cs.sendMessage(pl.prefix + "§c" + recipeKey + " ×")
+        val rs = mysql.query("SELECT * FROM recipes")
+
+        while (rs.next()){
+            val input = pl.util.itemStackArrayFromBase64(rs.getString("input"))
+            val output = pl.util.itemStackArrayFromBase64(rs.getString("output"))
+            val chance = HashMap<Skill,ChanceSet>()
+            val data = rs.getString("chance_set").split(",")
+            for (d in data){
+                val split = d.split(":")
+                chance[pl.skills[split[0].toInt()]] = pl.chanceSets[split[1]]!!
             }
+            pl.recipies[rs.getString("recipe_id")] = Recipe(input,output,chance)
         }
-        print(pl.chanceSets)
+        rs.close()
+        mysql.close()
     }
 
     private fun loadMachines(cs: CommandSender) {
@@ -284,7 +284,7 @@ class MIConfig(val pl: MIPlugin) {
                     )
             if (isCorrect) {
                 val recipeKeys = ymlFile.getList(machineKey  + ".recipes")
-                print(recipeKeys)
+//                print(recipeKeys)
                 val newRecipes = mutableListOf<Recipe>()
                 for (recipeKey in recipeKeys) {
                     (pl.recipies[recipeKey.toString()])?.let {

@@ -41,11 +41,11 @@ class MIMachine(val pl: MIPlugin) {
     }*/
 
     fun process(p: PlayerSkillData, machine: Machine, inputs: MutableList<ItemStack>, pla: Player): MutableList<ItemStack>? {
-//        print(inputs)
         for (recipe in machine.recipes) {
             if (recipe.inputs != inputs){
                 continue
             }
+
             val chance = recipe.chanceSets
             val skillid = mutableListOf<Int>()
             for (c in chance) {
@@ -59,7 +59,7 @@ class MIMachine(val pl: MIPlugin) {
 
             if (skillid.size == 0) return mutableListOf(ItemStack(Material.AIR))
 
-            val flags = mutableListOf<Boolean>()
+            var flags = true
 
             for (i in skillid){
                 val level = chance[pl.skills[i]]
@@ -76,29 +76,20 @@ class MIMachine(val pl: MIPlugin) {
                     }
                 }
 
+                if (min < Math.random()){
 
-                val r = Math.random()
+                    flags = false
 
-                if (min >= r){
-                    flags.add(true)
-                }else{
-                    flags.add(false)
-
-                    val r2 = Math.random()
-
-                    if (min < r2 && p[i]!! < 100 && pl.player_slimit[pla.uniqueId]!! > 0) {
+                    if (min < Math.random() && p[i]!! < 100 && pl.player_slimit[pla.uniqueId]!! > 0) {
                         pla.sendMessage("${pl.prefix}§e${pl.skills[i-1].name}スキル§aがレベルアップしました！§6[§f${p[i]!!}Lv->${p[i]!! + 1}Lv§6]")
                         val s = pl.playerData[pla.uniqueId]
                         s!![i] = p[i]!! + 1
                         pl.player_slimit[pla.uniqueId] = pl.player_slimit[pla.uniqueId]!! - 1
-
                     }
-
                 }
-
             }
 
-            if (flags.indexOf(false) >=0)return null
+            if (!flags)return null
 
             return recipe.outputs
 
