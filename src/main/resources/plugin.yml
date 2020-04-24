@@ -1,6 +1,8 @@
 name: Man10Industry
-version: ${project.version}
+version: 1.0
 main: red.man10.MIPlugin
+softdepend:
+  - Man10CommonLibs
 authors: [Shupro,Ryotackey,takatronix]
 description: Minecraft Man10 Industry plugin
 prefix: mIndustry
