@@ -13,6 +13,7 @@ import red.man10.man10industry.models.Skill
 import red.man10.man10industry.models.SkillGenre
 import red.man10.man10industry.models.*
 import java.io.File
+import java.lang.StringBuilder
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -141,16 +142,22 @@ class MIConfig(val pl: MIPlugin) {
         c.set("$id.machine", recipe.machine)
         c.set("$id.sealed", recipe.sealed)
 
+        val chance = StringBuilder()
+
         for (i in recipe.chanceSets){
 
             for (s in pl.chanceSets){
                 if (i.value != s.value)continue
-                c.set("$id.chanceSets.chance", s.key)
-                c.set("$id.chanceSets.skill", pl.skills.indexOf(i.key))
+                chance.append("${pl.skills.indexOf(i.key)}:${s.key},")
                 break
             }
 
         }
+
+        var cstring = chance.toString()
+        cstring = cstring.removeSuffix(",")
+
+        c.set("$id.chance", cstring)
 
         c.save(file)
 
@@ -166,7 +173,12 @@ class MIConfig(val pl: MIPlugin) {
 
             for (recipeKey in c.getKeys(false)) {
 
-                val chance = "${c.getInt("$recipeKey.chanceSets.skill")}:${c.getString("$recipeKey.chanceSets.chance")}"
+                if (pl.recipies.containsKey(recipeKey)){
+                    cs.sendMessage("${pl.prefix}§b$recipeKey has already exist")
+                    continue
+                }
+
+                val chance = c.getString("$recipeKey.chance")
                 val inputItems = c.getString("$recipeKey.inputs")
                 val outputItems = c.getString("$recipeKey.outputs")
                 val machineId = c.getString("$recipeKey.machine")
@@ -179,7 +191,7 @@ class MIConfig(val pl: MIPlugin) {
             }
         }
 
-        cs.sendMessage("${pl.prefix}§bYou have to reload plugin /mi reload.")
+        cs.sendMessage("${pl.prefix}§bimport has done. You have to reload plugin /mi reload.")
 
     }
 

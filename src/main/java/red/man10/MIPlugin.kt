@@ -193,6 +193,11 @@ class MIPlugin : JavaPlugin() {
                                 return true
                             }
                             "reload" -> {
+                                recipies.clear()
+                                machines.clear()
+                                skills.clear()
+                                chanceSets.clear()
+                                unsealed.clear()
                                 config.loadAll(sender, false)
                                 return true
                             }
