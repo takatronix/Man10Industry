@@ -11,6 +11,7 @@ import red.man10.man10industry.models.Recipe
 import red.man10.man10industry.models.Skill
 import red.man10.man10industry.models.*
 import java.io.File
+import java.lang.NumberFormatException
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.HashMap
@@ -23,6 +24,7 @@ class MIPlugin : JavaPlugin() {
 
     val ryml = File(this.dataFolder, "recipes")
 
+    val unsealed = HashMap<UUID, MutableList<String>>()
     val listener = MIListener(this)
     val db = MIDatabase(this)
     val config = MIConfig(this)
@@ -270,6 +272,60 @@ class MIPlugin : JavaPlugin() {
                     }
                     3 -> {
                         when(args[0]) {
+
+                            "seal" -> {
+
+                                if (!recipies.containsKey(args[2])){
+                                    sender.sendMessage("$prefix§bthe recipeId does not exist")
+                                    return true
+                                }
+
+                                val p = Bukkit.getPlayer(args[1])
+
+                                if (!unsealed.containsKey(p.uniqueId)){
+                                    sender.sendMessage("$prefix§bthe player has already sealed")
+                                    return true
+                                }
+
+                                if (!unsealed[p.uniqueId]!!.contains(args[2])){
+                                    sender.sendMessage("$prefix§bthe player has already sealed")
+                                    return true
+                                }
+
+                                unsealed[p.uniqueId]!!.remove(args[2])
+
+                                config.setUnsealed()
+
+                                sender.sendMessage("$prefix§bSealed. You have to reload plugin /mi reload.")
+                                return true
+                            }
+
+                            "unseal" -> {
+
+                                if (!recipies.containsKey(args[2])){
+                                    sender.sendMessage("$prefix§bthe recipeId does not exist")
+                                    return true
+                                }
+
+                                val p = Bukkit.getPlayer(args[1])
+
+
+
+                                if (!unsealed.containsKey(p.uniqueId)){
+                                    unsealed[p.uniqueId]!!.add(args[2])
+                                }else{
+                                    if (unsealed[p.uniqueId]!!.contains(args[2])){
+                                        sender.sendMessage("$prefix§bthe player has already unsealed")
+                                        return true
+                                    }
+                                    unsealed[p.uniqueId] = mutableListOf(args[2])
+                                }
+
+                                config.setUnsealed()
+
+                                sender.sendMessage("$prefix§bUnsealed. You have to reload plugin /mi reload.")
+                                return true
+                            }
                             "info" -> {
                                 when (args[1]) {
                                     "c" -> {
@@ -306,18 +362,6 @@ class MIPlugin : JavaPlugin() {
                     }
                     4 -> {
                         when(args[0]) {
-
-                            "createrecipe" -> {
-
-                                if (recipies.containsKey(args[1])){
-                                    sender.sendMessage("$prefix§bthe recipeId has already used")
-                                    return true
-                                }
-
-                                config.createRecipe(args[1],args[2],args[3], sender)
-                                return true
-                            }
-
                             "setlevel" -> {
                                 val targetPlayer = Bukkit.getPlayer(args[1])
                                 if (targetPlayer == null) {
@@ -363,6 +407,34 @@ class MIPlugin : JavaPlugin() {
                         }
 
                     }
+
+                    5->{
+                        when(args[0]) {
+                            "createrecipe" -> {
+
+                                if (recipies.containsKey(args[1])) {
+                                    sender.sendMessage("$prefix§bthe recipeId has already used")
+                                    return true
+                                }
+
+                                if (!machines.containsKey(args[3])) {
+                                    sender.sendMessage("$prefix§bthe machineId does not exist")
+                                    return true
+                                }
+
+                                try {
+                                    args[4].toInt()
+                                } catch (e: NumberFormatException){
+                                    sender.sendMessage("$prefix§bsealed is only number 1 or 0")
+                                    return true
+                                }
+
+                                config.createRecipe(args[1], args[2], args[3], sender, args[4].toInt())
+                                return true
+                            }
+                        }
+                    }
+
                 }
             }
             warnWrongCommand(sender)
@@ -383,7 +455,7 @@ class MIPlugin : JavaPlugin() {
         sender.sendMessage("§3/mi setlevel [playerId] [skillId] [level] §7Set a level of player")
         sender.sendMessage("§3/mi update [playerId] §7Update player's skill cache by DB.")
         sender.sendMessage("§3/mi get [machineId] §7Get a machine")
-        sender.sendMessage("§3/mi createrecipe [recipeId] [chanceId] [machineId] §7Create a new recipe.")
+        sender.sendMessage("§3/mi createrecipe [recipeId] [chanceId] [machineId] [sealed(1(true)/0(false))] §7Create a new recipe.")
         sender.sendMessage("§3/mi createmachine [machineId] [machine name] [image] §7Create a new machine.")
         sender.sendMessage("§3/mi createchance [chanceId] [minlevel] [data] §7Create new chance data.")
         sender.sendMessage("§3/mi deleterecipe [recipeId] §7Delete a recipe.")
@@ -418,6 +490,7 @@ class MIPlugin : JavaPlugin() {
         var input = ""
         var machine = ""
         var chance = ""
+        var sealed = 0
 
     }
 

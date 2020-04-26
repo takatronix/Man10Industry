@@ -152,7 +152,7 @@ class MIGUI(val pl: MIPlugin): Listener {
                     } else {
                         p.closeInventory()
                         Thread(Runnable {
-                            pl.config.setInOutput(pl.setRecipe[p]!!.input, encodedItems, recipeKey, pl.setRecipe[p]!!.machine, pl.setRecipe[p]!!.chance, p)
+                            pl.config.setInOutput(pl.setRecipe[p]!!.input, encodedItems, recipeKey, pl.setRecipe[p]!!.machine, pl.setRecipe[p]!!.chance, p, pl.setRecipe[p]!!.sealed)
                         }).start()
                     }
 

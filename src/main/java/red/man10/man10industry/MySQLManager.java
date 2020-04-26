@@ -46,7 +46,7 @@ public class MySQLManager {
                 "  `skill_id` int(11) DEFAULT NULL,\n" +
                 "  `level` int(11) DEFAULT NULL,\n" +
                 "  PRIMARY KEY (`key`)\n" +
-                ") ENGINE=InnoDB DEFAULT CHARSET=latin1;");
+                ");");
 
 
         execute("CREATE TABLE if not exists `player_skill_limit` (\n" +
@@ -54,15 +54,16 @@ public class MySQLManager {
                 "  `uuid` varchar(40) NOT NULL,\n" +
                 "  `skill_limit` int(11) NOT NULL DEFAULT '500',\n" +
                 "  PRIMARY KEY (`key`,`uuid`,`skill_limit`)\n" +
-                ") ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+                ");");
 
 
-        execute("CREATE TABLE if not exists `recipes` (" +
-                "`recipe_id` text DEFAULT NULL,\n" +
+        execute("CREATE TABLE if not exists `recipes` (\n" +
+                "  `recipe_id` text DEFAULT NULL,\n" +
                 "  `chance_set` text DEFAULT NULL,\n" +
                 "  `input` text DEFAULT NULL,\n" +
                 "  `output` text DEFAULT NULL,\n" +
-                "  `machine` varchar(45) DEFAULT NULL\n" +
+                "  `machine` varchar(45) DEFAULT NULL,\n" +
+                "  `sealed` tinyint(4) DEFAULT NULL\n" +
                 ");");
 
         if(!this.connected) {

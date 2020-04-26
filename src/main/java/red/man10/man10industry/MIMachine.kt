@@ -42,11 +42,21 @@ class MIMachine(val pl: MIPlugin) {
 
     fun process(p: PlayerSkillData, machine: String, inputs: MutableList<ItemStack>, pla: Player): MutableList<ItemStack>? {
 
-        for (recipe in pl.recipies.values) {
+        for (i in pl.recipies) {
+
+            val recipe = i.value
 
             if (recipe.machine != machine) continue
 
             if (inputs.toString() != recipe.inputs.toString()) continue
+
+            if (recipe.sealed){
+
+                if (!pl.unsealed.containsKey(pla.uniqueId)) continue
+
+                if (!pl.unsealed[pla.uniqueId]!!.contains(i.key)) continue
+
+            }
 
             val chance = recipe.chanceSets
             val skillid = mutableListOf<Int>()

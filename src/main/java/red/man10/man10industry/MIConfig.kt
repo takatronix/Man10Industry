@@ -13,6 +13,8 @@ import red.man10.man10industry.models.Skill
 import red.man10.man10industry.models.SkillGenre
 import red.man10.man10industry.models.*
 import java.io.File
+import java.util.*
+import kotlin.collections.HashMap
 
 class MIConfig(val pl: MIPlugin) {
 
@@ -24,6 +26,7 @@ class MIConfig(val pl: MIPlugin) {
             loadSkills(cs)
             loadRecipes(cs)
             loadMachines(cs)
+            loadUnsealed(cs)
 
             if (isFirst) {
                 MappRenderer.setup(pl)
@@ -36,8 +39,23 @@ class MIConfig(val pl: MIPlugin) {
         }
     }
 
-    fun setInOutput(inputItems: String,outputItems: String, recipeKey: String, machineId: String, chance: String, p: Player) {
-        MySQLManager(pl,"MIRecipe").execute("INSERT INTO recipes (recipe_id,chance_set,input,output,machine) VALUES('$recipeKey','$chance','$inputItems','$outputItems','$machineId');")
+    fun setUnsealed(){
+
+        val file = loadFile("unsealed",Bukkit.getConsoleSender())
+        val ymlFile = YamlConfiguration.loadConfiguration(file)
+
+        for (i in pl.unsealed){
+
+            ymlFile.set("${i.key}", i.value)
+
+        }
+
+        ymlFile.save(file)
+
+    }
+
+    fun setInOutput(inputItems: String,outputItems: String, recipeKey: String, machineId: String, chance: String, p: Player, sealed: Int) {
+        MySQLManager(pl,"MIRecipe").execute("INSERT INTO recipes (recipe_id,chance_set,input,output,machine,sealed) VALUES('$recipeKey','$chance','$inputItems','$outputItems','$machineId','$sealed');")
         p.sendMessage("${pl.prefix}§bcreated new recipe. You have to reload plugin /mi reload.")
         Bukkit.getLogger().info("created new recipe")
     }
@@ -52,11 +70,12 @@ class MIConfig(val pl: MIPlugin) {
         Bukkit.getLogger().info("created new machine")
     }
 
-    fun createRecipe(id:String,chance:String, machine: String, p: Player){
+    fun createRecipe(id:String,chance:String, machine: String, p: Player, sealed: Int){
 
         val s = MIPlugin.SetRecipe()
         s.chance = chance
         s.machine = machine
+        s.sealed = sealed
 
         pl.setRecipe[p] = s
         val gui = MIGUI(pl)
@@ -106,6 +125,20 @@ class MIConfig(val pl: MIPlugin) {
         val ymlFile = YamlConfiguration.loadConfiguration(file)
 
         return ymlFile.getStringList("$id.recipes")
+    }
+
+    private fun loadUnsealed(cs: CommandSender){
+
+        val file = loadFile("unsealed", cs)
+
+        pl.unsealed.clear()
+        val ymFile = YamlConfiguration.loadConfiguration(file)
+
+        for (i in ymFile.getKeys(false)){
+            pl.unsealed[UUID.fromString(i)] = ymFile.getList(i) as MutableList<String>
+        }
+
+        cs.sendMessage("${pl.prefix}§eunsealed loaded")
     }
 
     private fun loadChanceSets(cs: CommandSender) {
@@ -234,11 +267,12 @@ class MIConfig(val pl: MIPlugin) {
                 val chance = HashMap<Skill,ChanceSet>()
                 val data = rs.getString("chance_set").split(",")
                 val machine = rs.getString("machine")
+                val sealed = rs.getInt("sealed") == 1
                 for (d in data){
                     val split = d.split(":")
                     chance[pl.skills[split[0].toInt()]] = pl.chanceSets[split[1]]!!
                 }
-                pl.recipies[rs.getString("recipe_id")] = Recipe(input,output,chance,machine)
+                pl.recipies[rs.getString("recipe_id")] = Recipe(input,output,chance,machine,sealed)
                 cs.sendMessage(pl.prefix + "§a" + rs.getString("recipe_id")+ " ○")
             }catch (e:Exception){
                 cs.sendMessage(e.message)

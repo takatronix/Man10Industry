@@ -6,5 +6,6 @@ data class Recipe(
         var inputs: MutableList<ItemStack>,
         var outputs: MutableList<ItemStack>,
         var chanceSets: HashMap<Skill, ChanceSet>,
-        var machine: String
+        var machine: String,
+        var sealed: Boolean
 )
