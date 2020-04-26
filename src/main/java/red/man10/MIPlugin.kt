@@ -206,11 +206,35 @@ class MIPlugin : JavaPlugin() {
                                 }).start()
                                 return true
                             }
+
+                            "import" -> {
+
+                                Thread(Runnable {
+                                    config.import(sender)
+                                }).start()
+                                return true
+
+                            }
+
                         }
                     }
                     2 -> {
                         when (args[0]) {
 
+                            "export" -> {
+
+                                if (!recipies.containsKey(args[1])){
+                                    sender.sendMessage("$prefix§bthe recipeId does not exist")
+                                    return true
+                                }
+
+                                config.export(args[1])
+
+                                sender.sendMessage("$prefix§bexport complete")
+
+                                return true
+
+                            }
 
                             "usemachine" -> {
                                 gui.openProcessingView(sender, args[1])
@@ -461,6 +485,10 @@ class MIPlugin : JavaPlugin() {
         sender.sendMessage("§3/mi deleterecipe [recipeId] §7Delete a recipe.")
         sender.sendMessage("§3/mi deletemachine [machineId] §7Delete a machine.")
         sender.sendMessage("§3/mi deletechance [chanceId] §7Delete a chance.")
+        sender.sendMessage("§3/mi seal [playerId] [recipeId] §7Seal the recipe.")
+        sender.sendMessage("§3/mi unseal [playerId] [recipeId] §7Unseal the recipe.")
+        sender.sendMessage("§3/mi export [recipeId] §7Export the recipe.")
+        sender.sendMessage("§3/mi import [recipeId] §7Import the recipe.")
         sender.sendMessage("§bVer 1.0")
         sender.sendMessage("§a***************************")
     }

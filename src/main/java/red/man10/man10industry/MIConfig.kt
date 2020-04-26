@@ -127,6 +127,62 @@ class MIConfig(val pl: MIPlugin) {
         return ymlFile.getStringList("$id.recipes")
     }
 
+    fun export(id: String){
+
+        val u = MIUtility(pl)
+
+        val file = File("${pl.dataFolder.path}/recipes", "$id.yml")
+        val c = YamlConfiguration.loadConfiguration(file)
+
+        val recipe = pl.recipies[id]!!
+
+        c.set("$id.inputs", u.itemStackArrayToBase64(recipe.inputs))
+        c.set("$id.outputs", u.itemStackArrayToBase64(recipe.outputs))
+        c.set("$id.machine", recipe.machine)
+        c.set("$id.sealed", recipe.sealed)
+
+        for (i in recipe.chanceSets){
+
+            for (s in pl.chanceSets){
+                if (i.value != s.value)continue
+                c.set("$id.chanceSets.chance", s.key)
+                c.set("$id.chanceSets.skill", pl.skills.indexOf(i.key))
+                break
+            }
+
+        }
+
+        c.save(file)
+
+    }
+
+    fun import(cs: CommandSender){
+
+        val filelist = File("${pl.dataFolder.path}/recipes").listFiles() ?: return
+
+        for (file in filelist){
+
+            val c = YamlConfiguration.loadConfiguration(file)
+
+            for (recipeKey in c.getKeys(false)) {
+
+                val chance = "${c.getInt("$recipeKey.chanceSets.skill")}:${c.getString("$recipeKey.chanceSets.chance")}"
+                val inputItems = c.getString("$recipeKey.inputs")
+                val outputItems = c.getString("$recipeKey.outputs")
+                val machineId = c.getString("$recipeKey.machine")
+                val sealed = if (c.getBoolean("$recipeKey.sealed")) 1 else 0
+
+                MySQLManager(pl, "MIRecipe").execute("INSERT INTO recipes (recipe_id,chance_set,input,output,machine,sealed) VALUES('$recipeKey','$chance','$inputItems','$outputItems','$machineId','$sealed');")
+                cs.sendMessage("${pl.prefix}§bimport $recipeKey.")
+                Bukkit.getLogger().info("import $recipeKey")
+
+            }
+        }
+
+        cs.sendMessage("${pl.prefix}§bYou have to reload plugin /mi reload.")
+
+    }
+
     private fun loadUnsealed(cs: CommandSender){
 
         val file = loadFile("unsealed", cs)
