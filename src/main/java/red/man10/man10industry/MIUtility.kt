@@ -14,7 +14,7 @@ class MIUtility(val pl: MIPlugin) {
     // Below made by @takatronix
 
     @Throws(IllegalStateException::class)
-    fun itemStackArrayToBase64(items: Array<ItemStack>): String {
+    fun itemStackArrayToBase64(items: MutableList<ItemStack>): String {
         try {
             val outputStream = ByteArrayOutputStream()
             val dataOutput = BukkitObjectOutputStream(outputStream)

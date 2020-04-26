@@ -58,10 +58,11 @@ public class MySQLManager {
 
 
         execute("CREATE TABLE if not exists `recipes` (" +
-                "`recipe_id`  TEXT NULL DEFAULT NULL,\n" +
-                "`chance_set` TEXT NULL DEFAULT NULL,\n" +
-                "`input` TEXT NULL DEFAULT NULL,\n" +
-                "`output` TEXT NULL DEFAULT NULL\n" +
+                "`recipe_id` text DEFAULT NULL,\n" +
+                "  `chance_set` text DEFAULT NULL,\n" +
+                "  `input` text DEFAULT NULL,\n" +
+                "  `output` text DEFAULT NULL,\n" +
+                "  `machine` varchar(45) DEFAULT NULL\n" +
                 ");");
 
         if(!this.connected) {

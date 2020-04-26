@@ -21,6 +21,8 @@ class MIPlugin : JavaPlugin() {
 
     val prefix = "§a[§bm§3Industry§a] §b"
 
+    val ryml = File(this.dataFolder, "recipes")
+
     val listener = MIListener(this)
     val db = MIDatabase(this)
     val config = MIConfig(this)
@@ -39,6 +41,8 @@ class MIPlugin : JavaPlugin() {
 
     val player_slimit = ConcurrentHashMap<UUID, Int>()
 
+    val setRecipe = HashMap<Player, SetRecipe>()
+
     //var mysql: MySQLManager? = null
 
     var isLocked = false
@@ -52,6 +56,8 @@ class MIPlugin : JavaPlugin() {
 //            broadcastMessage(prefix + "§aDatabase Error - §fLocking mIndustry")
 //            //return
 //        }
+
+        ryml.mkdir()
 
         server.pluginManager.registerEvents(listener, this)
         server.pluginManager.registerEvents(gui, this)
@@ -91,7 +97,6 @@ class MIPlugin : JavaPlugin() {
                 saveResource("images", false)
             }
 
-            saveResource("images/ik.png", false)
             saveResource("images/melter.png", false)
             saveResource("chance_sets.yml", false)
             saveResource("machines.yml", false)
@@ -143,16 +148,16 @@ class MIPlugin : JavaPlugin() {
                                 for (skill in skills) {
                                     when (skillId) {
                                         1 -> {
-                                            sender.sendMessage(prefix + "§e加工スキル:")
+                                            sender.sendMessage("$prefix§e加工スキル:")
                                         }
                                         5 -> {
-                                            sender.sendMessage(prefix + "§e魔法スキル:")
+                                            sender.sendMessage("$prefix§e魔法スキル:")
                                         }
                                         9 -> {
-                                            sender.sendMessage(prefix + "§e学問スキル:")
+                                            sender.sendMessage("$prefix§e学問スキル:")
                                         }
                                         13 -> {
-                                            sender.sendMessage(prefix + "§eスペシャルスキル:")
+                                            sender.sendMessage("$prefix§eスペシャルスキル:")
                                         }
                                     }
                                     val skillArrow = "§8 " + "〉".repeat(7 - skill.name.length)
@@ -228,19 +233,19 @@ class MIPlugin : JavaPlugin() {
                             }
                             "deleterecipe" ->{
                                 Thread(Runnable {
-                                    config.deleteRecipe(args[1])
+                                    config.deleteRecipe(args[1], sender)
                                 }).start()
                                 return true
                             }
                             "deletemachine" ->{
                                 Thread(Runnable {
-                                    config.deleteMachine(args[1])
+                                    config.deleteMachine(args[1], sender)
                                 }).start()
                                 return true
                             }
                             "deletechance" ->{
                                 Thread(Runnable {
-                                    config.deleteChance(args[1])
+                                    config.deleteChance(args[1], sender)
                                 }).start()
                                 return true
                             }
@@ -297,33 +302,22 @@ class MIPlugin : JavaPlugin() {
                                 }
                             }
 
-                            "createrecipe" -> {
-                                Thread(Runnable {
-                                    config.createRecipe(args[1],args[2])
-                                    sender.sendMessage("$prefix§bCreate new recipe. You have to reload plugin /mi reload.")
-                                }).start()
-                                return true
-                            }
-
-                            "setrecipe" -> {
-                                Thread(Runnable {
-                                    config.setRecipe(args[1],args[2])
-                                    sender.sendMessage("$prefix§bSet ${args[1]} to ${args[2]}. You have to reload plugin /mi reload.")
-                                }).start()
-                                return true
-                            }
-                            "removerecipe" ->{
-                                Thread(Runnable {
-                                    config.removeRecipe(args[1],args[2])
-                                    sender.sendMessage("$prefix§bremove ${args[2]} from ${args[1]}. You have to reload plugin /mi reload.")
-                                }).start()
-                                return true
-                            }
-
                         }
                     }
                     4 -> {
                         when(args[0]) {
+
+                            "createrecipe" -> {
+
+                                if (recipies.containsKey(args[1])){
+                                    sender.sendMessage("$prefix§bthe recipeId has already used")
+                                    return true
+                                }
+
+                                config.createRecipe(args[1],args[2],args[3], sender)
+                                return true
+                            }
+
                             "setlevel" -> {
                                 val targetPlayer = Bukkit.getPlayer(args[1])
                                 if (targetPlayer == null) {
@@ -385,21 +379,17 @@ class MIPlugin : JavaPlugin() {
         sender.sendMessage("§3/mi reload §7Load all data")
         sender.sendMessage("§3/mi list §7View all CS, Machines, Recipes, Skills")
         sender.sendMessage("§3/mi info [c/m/r] [key] §7View specific data of CS/ Machine/ Recipe")
-        sender.sendMessage("§3/mi setinput [recipeKey] §7Set an input for recipe")
-        sender.sendMessage("§3/mi setoutput [recipeKey] §7Set an output for recipe")
         sender.sendMessage("§3/mi usemachine [machineKey] §7Use a machine")
         sender.sendMessage("§3/mi setlevel [playerId] [skillId] [level] §7Set a level of player")
         sender.sendMessage("§3/mi update [playerId] §7Update player's skill cache by DB.")
         sender.sendMessage("§3/mi get [machineId] §7Get a machine")
-        sender.sendMessage("§3/mi createrecipe [recipeId] [chanceId] §7Create a new recipe.")
+        sender.sendMessage("§3/mi createrecipe [recipeId] [chanceId] [machineId] §7Create a new recipe.")
         sender.sendMessage("§3/mi createmachine [machineId] [machine name] [image] §7Create a new machine.")
         sender.sendMessage("§3/mi createchance [chanceId] [minlevel] [data] §7Create new chance data.")
-        sender.sendMessage("§3/mi setrecipe [machineId] [recipeId] §7set the recipe to the machine.")
-        sender.sendMessage("§3/mi removerecipe [machineId] [recipeId] §7Remove a recipe from the machine.")
         sender.sendMessage("§3/mi deleterecipe [recipeId] §7Delete a recipe.")
         sender.sendMessage("§3/mi deletemachine [machineId] §7Delete a machine.")
         sender.sendMessage("§3/mi deletechance [chanceId] §7Delete a chance.")
-        sender.sendMessage("§bVer 0.2 : by Shupro & Ryotackey")
+        sender.sendMessage("§bVer 1.0")
         sender.sendMessage("§a***************************")
     }
 
@@ -421,6 +411,14 @@ class MIPlugin : JavaPlugin() {
 
     fun warnWrongCommand(sender: CommandSender) {
         sender.sendMessage(prefix + "Wrong Command. /mi help")
+    }
+
+    class SetRecipe(){
+
+        var input = ""
+        var machine = ""
+        var chance = ""
+
     }
 
 }

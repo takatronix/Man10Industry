@@ -40,11 +40,13 @@ class MIMachine(val pl: MIPlugin) {
         return Pair(mutableListOf(ItemStack(Material.APPLE, 10)),)
     }*/
 
-    fun process(p: PlayerSkillData, machine: Machine, inputs: MutableList<ItemStack>, pla: Player): MutableList<ItemStack>? {
-        for (recipe in machine.recipes) {
-            if (recipe.inputs != inputs){
-                continue
-            }
+    fun process(p: PlayerSkillData, machine: String, inputs: MutableList<ItemStack>, pla: Player): MutableList<ItemStack>? {
+
+        for (recipe in pl.recipies.values) {
+
+            if (recipe.machine != machine) continue
+
+            if (inputs.toString() != recipe.inputs.toString()) continue
 
             val chance = recipe.chanceSets
             val skillid = mutableListOf<Int>()
@@ -57,17 +59,14 @@ class MIMachine(val pl: MIPlugin) {
                 }
             }
 
-            if (skillid.size == 0) return mutableListOf(ItemStack(Material.AIR))
+            if (skillid.size == 0) return mutableListOf()
 
             var flags = true
 
             for (i in skillid){
                 val level = chance[pl.skills[i]]
 
-                if (p[i]!! < level!!.req ){
-                    pla.sendMessage("${pl.prefix}§cレベルが足りません")
-                    return inputs
-                }
+                if (p[i]!! < level!!.req ) return inputs
 
                 var min = 0.0
                 for (l in level.chances){
@@ -82,7 +81,7 @@ class MIMachine(val pl: MIPlugin) {
 
                     flags = false
 
-                    if (min < Math.random() && p[i]!! < 100 && pl.player_slimit[pla.uniqueId]!! > 0) {
+                    if (min > Math.random() && p[i]!! < 100 && pl.player_slimit[pla.uniqueId]!! > 0) {
                         pla.sendMessage("${pl.prefix}§e${pl.skills[i-1].name}スキル§aがレベルアップしました！§6[§f${p[i]!!}Lv->${p[i]!! + 1}Lv§6]")
                         val s = pl.playerData[pla.uniqueId]
                         s!![i] = p[i]!! + 1
@@ -96,7 +95,7 @@ class MIMachine(val pl: MIPlugin) {
             return recipe.outputs
 
         }
-        return mutableListOf(ItemStack(Material.AIR))
+        return mutableListOf()
     }
 
     fun createMapItem(machineKey: String): ItemStack {

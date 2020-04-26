@@ -4,6 +4,7 @@ import org.bukkit.Bukkit
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.inventory.InventoryCloseEvent
+import org.bukkit.event.inventory.InventoryType
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import red.man10.MIPlugin
@@ -14,9 +15,11 @@ class MIListener(val pl: MIPlugin): Listener {
     @EventHandler
     fun onInvClose(e: InventoryCloseEvent) {
 
-        val inv = e.inventory
+        val inv = e.player.openInventory
 
-        if (inv.name == pl.prefix + "§0加工メニュー"){
+        if (inv.type != InventoryType.CHEST) return
+
+        if (inv.title == pl.prefix + "§0加工メニュー"){
 
 
             loop@for (i in 0 until 45){

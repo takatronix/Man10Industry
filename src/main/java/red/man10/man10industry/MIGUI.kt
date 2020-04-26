@@ -57,9 +57,9 @@ class MIGUI(val pl: MIPlugin): Listener {
 
     @EventHandler
     fun onItemClick(e: InventoryClickEvent) {
-        val inv = e.inventory
+        val inv = e.whoClicked.openInventory
         val p = e.whoClicked as Player
-        when (inv.name) {
+        when (inv.title) {
             (pl.prefix + "§0加工メニュー") -> {
                 val blankSlots = mutableListOf(45, 46, 47, 48, 50, 51, 52, 53)
                 val arrowSlots = mutableListOf(49)
@@ -83,11 +83,7 @@ class MIGUI(val pl: MIPlugin): Listener {
                             inputs.add(ItemStack(Material.AIR))
                         }
                     }
-                    val outputs = pl.machine.process(skillData, pl.machines[machineKey]!!, inputs, p)
-                    if (outputs == mutableListOf(ItemStack(Material.AIR))){
-                        p.sendMessage("${pl.prefix}§bレシピが間違ってます")
-                        return
-                    }
+                    val outputs = pl.machine.process(skillData, machineKey, inputs, p)
 
                     if (outputs == null){
                         p.playSound(p.location, "error", 1f, 1f)
@@ -95,6 +91,16 @@ class MIGUI(val pl: MIPlugin): Listener {
                         for (i in 0 until 45){
                             inv.setItem(i, ItemStack(Material.AIR))
                         }
+                        return
+                    }
+
+                    if (outputs.size == 0){
+                        p.sendMessage("${pl.prefix}§bレシピが間違ってます")
+                        return
+                    }
+
+                    if (outputs == inputs){
+                        p.sendMessage("${pl.prefix}§cレベルが足りません")
                         return
                     }
 
@@ -117,7 +123,7 @@ class MIGUI(val pl: MIPlugin): Listener {
                 }
 
                 if (e.slot == 49) {
-                    var items = mutableListOf<ItemStack>()
+                    val items = mutableListOf<ItemStack>()
                     for (slot in 0..44) {
                         if (inv.getItem(slot) != null) {//!= ItemStack(Material.AIR)) {
                             items.add(inv.getItem(slot))
@@ -134,15 +140,21 @@ class MIGUI(val pl: MIPlugin): Listener {
 //                        pl.recipies[recipeKey]!!.outputs = items
 //                    }
 
-                    val encodedItems = pl.util.itemStackArrayToBase64(items.toTypedArray())
+                    val encodedItems = pl.util.itemStackArrayToBase64(items)
 //                    print(encodedItems)
                     if (inv.title == (pl.prefix + "§0Set Input")) {
-                        pl.config.setInput(encodedItems, recipeKey)
+                        val s = pl.setRecipe[p]!!
+                        s.input = encodedItems
+                        pl.setRecipe[p] = s
+                        p.closeInventory()
+                        val gui = MIGUI(pl)
+                        gui.openOutputSetView(p, recipeKey)
                     } else {
-                        pl.config.setOutput(encodedItems, recipeKey)
+                        p.closeInventory()
+                        Thread(Runnable {
+                            pl.config.setInOutput(pl.setRecipe[p]!!.input, encodedItems, recipeKey, pl.setRecipe[p]!!.machine, pl.setRecipe[p]!!.chance, p)
+                        }).start()
                     }
-                    p.closeInventory()
-                    p.sendMessage("${pl.prefix}§bYou have to reload plugin /mi reload.")
 
                 }
             }

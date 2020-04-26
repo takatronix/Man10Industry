@@ -3,8 +3,10 @@ package red.man10.man10industry
 import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.configuration.file.YamlConfiguration
+import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import red.man10.MIPlugin
+import red.man10.PlayerSkillData
 import red.man10.man10industry.models.Machine
 import red.man10.man10industry.models.Recipe
 import red.man10.man10industry.models.Skill
@@ -34,16 +36,10 @@ class MIConfig(val pl: MIPlugin) {
         }
     }
 
-    fun setInput(encodedItems: String, recipeKey: String) {
-        MySQLManager(pl,"MIRecipe").execute("UPDATE recipes SET input=" +
-                "'$encodedItems' WHERE recipe_id='$recipeKey'")
-
-    }
-
-    fun setOutput(encodedItems: String, recipeKey: String) {
-        MySQLManager(pl,"MIRecipe").execute("UPDATE recipes SET output=" +
-                "'$encodedItems' WHERE recipe_id='$recipeKey'")
-
+    fun setInOutput(inputItems: String,outputItems: String, recipeKey: String, machineId: String, chance: String, p: Player) {
+        MySQLManager(pl,"MIRecipe").execute("INSERT INTO recipes (recipe_id,chance_set,input,output,machine) VALUES('$recipeKey','$chance','$inputItems','$outputItems','$machineId');")
+        p.sendMessage("${pl.prefix}§bcreated new recipe. You have to reload plugin /mi reload.")
+        Bukkit.getLogger().info("created new recipe")
     }
 
     fun createMachine(id :String,name:String,image:String){
@@ -52,14 +48,20 @@ class MIConfig(val pl: MIPlugin) {
         ymlFile.createSection(id)
         ymlFile.set("$id.name",name)
         ymlFile.set("$id.image_name",image)
-        ymlFile.set("$id.recipes", mutableListOf<String>())
         ymlFile.save(file)
         Bukkit.getLogger().info("created new machine")
     }
 
-    fun createRecipe(id:String,chance:String){
-        MySQLManager(pl,"MIrecipe").execute("INSERT INTO recipes (recipe_id,chance_set) VALUES('$id','$chance');")
-        Bukkit.getLogger().info("created new recipe")
+    fun createRecipe(id:String,chance:String, machine: String, p: Player){
+
+        val s = MIPlugin.SetRecipe()
+        s.chance = chance
+        s.machine = machine
+
+        pl.setRecipe[p] = s
+        val gui = MIGUI(pl)
+        gui.openInputSetView(p, id)
+
     }
 
     fun createChance(id:String,minLevel:String,map:String){
@@ -78,53 +80,25 @@ class MIConfig(val pl: MIPlugin) {
         Bukkit.getLogger().info("created new chance data")
     }
 
-    fun setRecipe(machineId :String, recipeId:String){
-        val file = loadFile("machines",Bukkit.getConsoleSender())
-        val ymlFile = YamlConfiguration.loadConfiguration(file)
-        val recipe = ymlFile.getStringList("$machineId.recipes").toMutableList()
-
-        if (recipe.indexOf(recipeId) >=0){
-            Bukkit.getLogger().info("$recipeId is already exist.")
-            return
-        }
-        recipe.add(recipeId)
-        ymlFile.set("$machineId.recipes",recipe)
-        ymlFile.save(file)
-        Bukkit.getLogger().info("set recipe")
-    }
-
-    fun removeRecipe(machineId: String, recipeId: String){
-        val file = loadFile("machines",Bukkit.getConsoleSender())
-        val ymlFile = YamlConfiguration.loadConfiguration(file)
-        val recipe = ymlFile.getStringList("$machineId.recipes")
-
-        recipe.remove(recipeId)
-
-        ymlFile.set("$machineId.recipes",recipe)
-        ymlFile.save(file)
-        Bukkit.getLogger().info("set recipe")
-
-    }
-
-    fun deleteMachine(machineId: String){
+    fun deleteMachine(machineId: String, cs: CommandSender){
         val file = loadFile("machines",Bukkit.getConsoleSender())
         val ymlFile = YamlConfiguration.loadConfiguration(file)
 
         ymlFile.set(machineId,null)
         ymlFile.save(file)
-        Bukkit.getLogger().info("delete machine")
+        cs.sendMessage("${pl.prefix}§adelete machine")
     }
-    fun deleteRecipe(recipeId: String){
+    fun deleteRecipe(recipeId: String, cs: CommandSender){
         MySQLManager(pl,"Mirecipe").execute("DELETE FROM recipes WHERE recipe_id='$recipeId';")
-        Bukkit.getLogger().info("delete recipe")
+        cs.sendMessage("${pl.prefix}§adelete recipe")
     }
-    fun deleteChance(chanceId:String){
+    fun deleteChance(chanceId:String, cs: CommandSender){
         val file = loadFile("chance_sets",Bukkit.getConsoleSender())
         val ymlFile = YamlConfiguration.loadConfiguration(file)
 
         ymlFile.set(chanceId,null)
         ymlFile.save(file)
-        Bukkit.getLogger().info("delete chance")
+        cs.sendMessage("${pl.prefix}§adelete chance")
 
     }
     fun showRecipes(id:String):MutableList<String>{
@@ -251,17 +225,20 @@ class MIConfig(val pl: MIPlugin) {
 
         val rs = mysql.query("SELECT * FROM recipes")
 
+        cs.sendMessage("${pl.prefix}§erecipes:")
+
         while (rs.next()){
             try{
                 val input = pl.util.itemStackArrayFromBase64(rs.getString("input"))
                 val output = pl.util.itemStackArrayFromBase64(rs.getString("output"))
                 val chance = HashMap<Skill,ChanceSet>()
                 val data = rs.getString("chance_set").split(",")
+                val machine = rs.getString("machine")
                 for (d in data){
                     val split = d.split(":")
                     chance[pl.skills[split[0].toInt()]] = pl.chanceSets[split[1]]!!
                 }
-                pl.recipies[rs.getString("recipe_id")] = Recipe(input,output,chance)
+                pl.recipies[rs.getString("recipe_id")] = Recipe(input,output,chance,machine)
                 cs.sendMessage(pl.prefix + "§a" + rs.getString("recipe_id")+ " ○")
             }catch (e:Exception){
                 cs.sendMessage(e.message)
@@ -284,24 +261,13 @@ class MIConfig(val pl: MIPlugin) {
         for (machineKey in machineKeys) {
             val isCorrect: Boolean = (
                     ymlFile.getKeys(true).contains(machineKey + ".name") &&
-                    ymlFile.getKeys(true).contains(machineKey + ".image_name") &&
-                    ymlFile.getKeys(true).contains(machineKey + ".recipes")
+                    ymlFile.getKeys(true).contains(machineKey + ".image_name")
                     )
             if (isCorrect) {
-                val recipeKeys = ymlFile.getList(machineKey  + ".recipes")
-//                print(recipeKeys)
-                val newRecipes = mutableListOf<Recipe>()
-                for (recipeKey in recipeKeys) {
-                    (pl.recipies[recipeKey.toString()])?.let {
-                        print(it)
-                        newRecipes.add(it)
-                    }
-                }
 
                 val newMachine = Machine(
                         ymlFile.getString(machineKey + ".name"),
-                        ymlFile.getString(machineKey + ".image_name"),
-                        newRecipes
+                        ymlFile.getString(machineKey + ".image_name")
                 )
                 pl.machines.put(machineKey, newMachine)
                 cs.sendMessage(pl.prefix + "§a" + machineKey + " ○")

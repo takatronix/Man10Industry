@@ -1,15 +1,15 @@
-name: Man10Industry
+name: Man10Industry-1.0
 version: 1.0
 main: red.man10.MIPlugin
 softdepend:
   - Man10CommonLibs
-authors: [Shupro,Ryotackey,takatronix]
+authors: [Shupro,Ryotackey,takatronix,forest611]
 description: Minecraft Man10 Industry plugin
 prefix: mIndustry
 website: http://man10.red
 commands:
   mi:
-    default: op
+    permission: mi.op
 permissions:
   mi.use:
     default: true
